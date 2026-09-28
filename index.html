@@ -131,6 +131,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
 .day.today{box-shadow:inset 0 0 0 2px var(--scales)}
 .day.full b{color:var(--ok)}
 .side-r{display:grid;gap:16px}
+.rep{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 10px}
+.rep div{background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.rep b{display:block;font:800 22px var(--display)}
+.rep span{font-size:12px;color:var(--muted)}
+.rrow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line)}
+.rrow .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.rrow .bar b{display:block;height:100%;background:var(--ok)}
+.repbtn{font:700 14px var(--body);border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer;margin-top:10px}
 .filters{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 8px}
 .fchip{font:700 12.5px var(--body);border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:999px;padding:5px 10px;cursor:pointer}
 .fchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -211,6 +219,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
         <p class="hint">Exercises finished each day. Aim for 10.</p>
         <div class="week" id="week"></div>
         <p class="note">Voice first: if anything feels scratchy or tight, stop, sip water and go lighter. Slow and in tune beats fast and sloppy.</p>
+        <button class="repbtn" id="repBtn">&#x1F4CB; Progress report for coach</button>
+      </section>
+      <section class="card" id="repCard" hidden>
+        <h2>Progress report</h2>
+        <p class="hint">Show this at a lesson, or copy it into a message to a coach.</p>
+        <div id="repBody"></div>
+        <button class="repbtn" id="repCopy">Copy report</button> <span class="note" id="repNote"></span>
+        <textarea id="repText" readonly hidden style="width:100%;height:200px;margin-top:8px;font:12px var(--mono)"></textarea>
       </section>
     </aside>
   </div>
@@ -911,6 +927,34 @@ function frame() {
   drawTrace(target);
   requestAnimationFrame(frame);
 }
+
+/* ---------- progress report ---------- */
+function buildReport() {
+  const keys = []; const d = new Date(); for (let i = 0; i < 30; i++) { keys.push(dkey(d)); d.setDate(d.getDate() - 1); }
+  const active = k => LOG[k] && Object.keys(LOG[k].done || {}).length;
+  const d7 = keys.slice(0, 7).filter(active).length, d30 = keys.filter(active).length;
+  const ever = new Set(), best = {};
+  Object.values(LOG).forEach(o => { Object.keys(o.done || {}).forEach(id => ever.add(id)); Object.entries(o.best || {}).forEach(([id, v]) => best[id] = Math.max(best[id] || 0, v)); });
+  const scores = Object.values(best), avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+  let h = `<div class="rep"><div><b>${d7}/7</b><span>days this week</span></div><div><b>${d30}</b><span>days in the last 30</span></div><div><b>${ever.size}/${EX.length}</b><span>exercises practiced</span></div><div><b>${avg == null ? '\u{2013}' : avg + '%'}</b><span>average pitch score</span></div></div>`;
+  const lines = [];
+  GROUPS.forEach(([g, label]) => {
+    const items = EX.filter(e => e.g === g), n = items.filter(e => ever.has(e.id)).length;
+    const bs = items.map(e => best[e.id]).filter(v => v != null), gb = bs.length ? Math.round(bs.reduce((a, b) => a + b, 0) / bs.length) + '% in tune' : '';
+    h += `<div class="rrow"><span>${label}</span><span>${n}/${items.length}${gb ? ' \u{B7} ' + gb : ''}</span><div class="bar"><b style="width:${Math.round(n / items.length * 100)}%"></b></div></div>`;
+    lines.push(`${label}: ${n}/${items.length} practiced${gb ? ', ' + gb : ''}`);
+  });
+  const weak = Object.entries(best).filter(([, v]) => v < 70).map(([id, v]) => { const e = EX.find(x => x.id === id); return e ? `${e.t} (${v}%)` : null; }).filter(Boolean).slice(0, 6);
+  if (weak.length) h += `<p class="note"><b>Needs work (under 70% in tune):</b> ${weak.join(' \u{B7} ')}</p>`;
+  if (!scores.length) h += '<p class="note">Pitch scores appear when the mic is on during an exercise.</p>';
+  $('repBody').innerHTML = h;
+  S.reportText = [`Scale Studio progress (${new Date().toLocaleDateString()})`, `This week: ${d7}/7 days \u{B7} Last 30 days: ${d30} days \u{B7} Exercises practiced: ${ever.size}/${EX.length}` + (avg == null ? '' : ` \u{B7} Average pitch score: ${avg}%`), '', ...lines, ...(weak.length ? ['', 'Needs work: ' + weak.join('; ')] : [])].join('\n');
+}
+$('repBtn').onclick = () => { const c = $('repCard'); c.hidden = !c.hidden; if (!c.hidden) { buildReport(); c.scrollIntoView({behavior:'smooth', block:'nearest'}); } };
+$('repCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText(S.reportText || ''); $('repNote').textContent = 'Copied.'; }
+  catch (e) { const t = $('repText'); t.hidden = false; t.value = S.reportText || ''; t.focus(); t.select(); $('repNote').textContent = 'Select all and copy.'; }
+};
 
 /* ---------- week ---------- */
 function buildWeek() {
