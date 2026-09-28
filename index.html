@@ -19,7 +19,7 @@
 [hidden]{display:none!important}
 :root{
   --bg:#eef1f6; --surface:#ffffff; --surface-2:#f3f5f9; --ink:#15202c; --muted:#5d6878; --line:#d9dfe8;
-  --scales:#6d4cff; --voice:#ff4f6d; --licks:#e8930c; --riffs:#0e9f9a; --penta:#2f7de1; --ok:#159a5b; --warn:#c2410c;
+  --scales:#6d4cff; --voice:#ff4f6d; --licks:#e8930c; --riffs:#0e9f9a; --penta:#2f7de1; --modes:#c0479a; --chords:#1b8fb3; --groove:#2e9a3e; --warm:#c2410c; --ok:#159a5b; --warn:#c2410c;
   --key-w:#fbfaf7; --key-b:#1c2230; --key-line:#c5ccd8;
   --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
   --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -28,11 +28,11 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){color-scheme:dark;
     --bg:#0e131a; --surface:#161d27; --surface-2:#1d2531; --ink:#e9eef5; --muted:#9aa7b8; --line:#29323f;
-    --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
+    --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --modes:#e27cc0; --chords:#4cc3e6; --groove:#5fd36b; --warm:#ff8a5c; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
 }
 :root[data-theme="dark"]{color-scheme:dark;
   --bg:#0e131a; --surface:#161d27; --surface-2:#1d2531; --ink:#e9eef5; --muted:#9aa7b8; --line:#29323f;
-  --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
+  --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --modes:#e27cc0; --chords:#4cc3e6; --groove:#5fd36b; --warm:#ff8a5c; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
 .wrap{max-width:1320px;margin:0 auto;padding-inline:clamp(16px,3vw,28px);padding-block:20px 44px}
@@ -131,6 +131,19 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
 .day.today{box-shadow:inset 0 0 0 2px var(--scales)}
 .day.full b{color:var(--ok)}
 .side-r{display:grid;gap:16px}
+.filters{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 8px}
+.fchip{font:700 12.5px var(--body);border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:999px;padding:5px 10px;cursor:pointer}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ruler{position:relative;height:74px;margin-top:12px;border-radius:10px;background:var(--surface-2);overflow:hidden}
+.ruler .bl{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.ruler .bl.b{width:2px;background:var(--muted);opacity:.5}
+.ruler .bl span{position:absolute;top:2px;left:4px;font:500 10px var(--mono);color:var(--muted)}
+.ruler .dot{position:absolute;width:14px;height:14px;border-radius:50%;margin-left:-7px;background:var(--c);top:40px}
+.ruler .dot.grid{background:transparent;border:2px dashed var(--muted);top:18px}
+.ruler .dot.now{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 35%,transparent);transform:scale(1.25)}
+.rlegend{font-size:12.5px;color:var(--muted);margin-top:4px}
+.dyn{height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden;margin-top:8px}
+.dyn b{display:block;height:100%;background:var(--c);width:0}
 @media (prefers-reduced-motion: reduce){.cents i{transition:none}}
 </style>
 <style>body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
@@ -141,16 +154,17 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">We Belong Together &#xB7; key of C &#xB7; self-practice</div>
+      <div class="eyebrow" id="eyebrow">Pop &#xB7; R&amp;B &#xB7; ballads &#xB7; jazz &#xB7; rock &#xB7; self-practice</div>
       <h1>Scale Studio</h1>
     </div>
-    <p class="lede">The scales and warm-ups behind the song, played on piano. Listen, sing it back, or follow the lights on your own piano. Turn on the mic to see if you're in tune.</p>
+    <p class="lede">Scales, riffs, grooves and warm-ups for pop, R&amp;B, ballads, gospel, jazz and rock, played on piano. Listen, sing it back, or follow the lights on your own piano. Turn on the mic to see if you're in tune.</p>
   </header>
 
   <div class="grid">
     <nav class="card" aria-label="Exercises">
       <h2>Today's workout</h2>
-      <p class="hint">Pick about 10 a day, mixing groups. A check mark appears when you finish one today.</p>
+      <p class="hint">Pick a style, then about 10 exercises a day. A check mark appears when you finish one today.</p>
+      <div class="filters" id="filters" role="group" aria-label="Style"></div>
       <div id="exlist"></div>
     </nav>
 
@@ -165,10 +179,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
           <button id="m-follow" aria-pressed="false">I play it</button>
         </div>
         <label class="ctl" for="tempo">Tempo <input type="range" id="tempo" min="40" max="140" step="2" value="80"><output id="tempoOut">80 BPM</output></label>
+        <label class="ctl" for="keySel">Key <select id="keySel"></select></label>
         <label class="chk"><input type="checkbox" id="loop"> Repeat</label>
+        <label class="chk" id="cmpWrap" hidden><input type="checkbox" id="cmp" checked> Compare with exactly on the beat</label>
         <label class="chk" id="ladderWrap"><input type="checkbox" id="ladder" checked> Move up by half steps</label>
       </div>
       <div class="status" id="status">Press Play to hear it.</div>
+      <div id="rulerWrap" hidden><div class="ruler" id="ruler"></div><p class="rlegend">Dashed circles = exactly on the beat. Solid dots = where this style puts the notes. Vertical lines are beats; the darker ones start each bar.</p></div>
+      <div class="dyn" id="dyn" hidden><b id="dynB"></b></div>
       <div class="kbwrap"><div class="kb" id="kb"></div></div>
       <div class="rootline" id="rootline" hidden></div>
       <div class="strip" id="strip"></div>
@@ -203,12 +221,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const NAMES = ['C','C\u{266F}','D','E\u{266D}','E','F','F\u{266F}','G','A\u{266D}','A','B\u{266D}','B'];
-const nn = m => NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+const SHARPS = ['C','C\u{266F}','D','D\u{266F}','E','F','F\u{266F}','G','G\u{266F}','A','A\u{266F}','B'];
+const sharpKey = () => { try { return [2, 4, 6, -5, -3, -1].includes(S.keyOff) && !S.ex.pattern; } catch (e) { return false; } };
+const nn = m => (sharpKey() ? SHARPS : NAMES)[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 const SOLF = ['do','di','re','me','mi','fa','fi','sol','le','la','te','ti'];
 const solf = (m, tonic) => SOLF[((m - tonic) % 12 + 12) % 12];
-const COLORS = { scales:'var(--scales)', voice:'var(--voice)', licks:'var(--licks)', riffs:'var(--riffs)', penta:'var(--penta)' };
-const GROUPS = [['scales','Scales & ear'], ['penta','The pentatonic family'], ['licks','Song licks'], ['riffs','R&B riffs, runs & ad-libs'], ['voice','Voice builders']];
+const COLORS = { scales:'var(--scales)', voice:'var(--voice)', licks:'var(--licks)', riffs:'var(--riffs)', penta:'var(--penta)', modes:'var(--modes)', chords:'var(--chords)', groove:'var(--groove)', warm:'var(--warm)' };
+const GROUPS = [['scales','Scales & ear'], ['penta','The pentatonic family'], ['modes','Minor scales & modes'], ['chords','Jazz & gospel chords'], ['groove','Groove & timing'], ['licks','We Belong Together licks'], ['riffs','R&B riffs, runs & ad-libs'], ['warm','Classic warm-ups'], ['voice','Voice builders']];
 
 /* ---------- exercises ---------- */
 // notes: absolute MIDI (C4 = 60). pattern+roots: intervals repeated on each root (ladder).
@@ -238,6 +258,102 @@ const EX = [
    groups:[[65,69,72,76],[67,71,74,79],[64,67,71,74],[65,69,72,77]],
    why:'The whole song loops these four chords. Knowing them by ear tells you where each run should land.', song:'Every section',
    tip:'Each chord sounds first, then its notes one at a time. On piano, play the chord with the left hand and the arpeggio with the right.'},
+  {id:'natmin', g:'modes', t:'Natural minor', s:'do re me fa sol le te do', tempo:80, len:1,
+   notes:[60,62,63,65,67,68,70,72,70,68,67,65,63,62,60], tonic:60,
+   why:'The basic minor scale behind sad pop ballads and many R&B and rock songs.', song:'Minor-key songs of every style',
+   tip:'Three notes are lowered compared with major: me, le and te. Listen for the darker color.'},
+  {id:'harmin', g:'modes', t:'Harmonic minor', s:'do re me fa sol le ti do', tempo:76, len:1,
+   notes:[60,62,63,65,67,68,71,72,71,68,67,65,63,62,60], tonic:60,
+   why:'Natural minor with a raised ti. That wide jump from le to ti is the dramatic sound in big-diva runs by Mariah, Whitney and Christina.', song:'Dramatic ballad runs',
+   tip:'The le-to-ti step is wider than a normal step. Tune it carefully: aim a little high on ti.'},
+  {id:'melmin', g:'modes', t:'Melodic minor', s:'up: do re me fa sol la ti do \u{B7} down: natural minor', tempo:76, len:1,
+   notes:[60,62,63,65,67,69,71,72,70,68,67,65,63,62,60], tonic:60,
+   why:'Classical form: raised la and ti going up, natural minor coming down. Jazz singers use the "up" version both ways.', song:'Jazz and advanced R&B lines',
+   tip:'Going up it sounds almost like major. Coming down it turns minor again. Feel the switch at the top.'},
+  {id:'dorian', g:'modes', t:'Dorian mode', s:'do re me fa sol la te do', tempo:80, len:1,
+   notes:[60,62,63,65,67,69,70,72,70,69,67,65,63,62,60], tonic:60,
+   why:'Minor with a bright la. The cool, groovy minor of neo-soul, funk and a lot of R&B.', song:'Neo-soul and funk grooves',
+   tip:'La is the special note. Land on it and it sounds hopeful instead of sad.'},
+  {id:'mixo', g:'modes', t:'Mixolydian mode', s:'do re mi fa sol la te do', tempo:84, len:1,
+   notes:[60,62,64,65,67,69,70,72,70,69,67,65,64,62,60], tonic:60,
+   why:'Major with a lowered te. The churchy, bluesy-major sound of gospel, rock and country.', song:'Gospel, rock and country',
+   tip:'Te pulls down toward la. Sing it with a little attitude.'},
+  {id:'lydian', g:'modes', t:'Lydian mode', s:'do re mi fi sol la ti do', tempo:78, len:1,
+   notes:[60,62,64,66,67,69,71,72,71,69,67,66,64,62,60], tonic:60,
+   why:'Major with a raised fi. The dreamy, floating sound in film music and some pop.', song:'Dreamy pop and film songs',
+   tip:'Fi wants to lift up to sol. Keep it light and it sparkles.'},
+  {id:'chrom', g:'modes', t:'Chromatic scale', s:'every half step, C to C and back', tempo:72, len:.5,
+   notes:[60,61,62,63,64,65,66,67,68,69,70,71,72,71,70,69,68,67,66,65,64,63,62,61,60], tonic:60,
+   why:'Every note, one half step at a time. The best drill for fine pitch control and slides.', song:'Pitch accuracy for every style',
+   tip:'Half steps are tiny. Think of each one as a small lean, not a jump. The mic check is great for this one.'},
+  {id:'whole', g:'modes', t:'Whole-tone scale', s:'do re mi fi si li do', tempo:72, len:1,
+   notes:[60,62,64,66,68,70,72,70,68,66,64,62,60], tonic:60,
+   why:'Only whole steps. A floating, dreamlike jazz color.', song:'Jazz',
+   tip:'There is no home note that feels finished. That unsettled feeling is the point.'},
+  {id:'dimsc', g:'modes', t:'Diminished scale (half-whole)', s:'half step, whole step, repeating', tempo:66, len:.5,
+   notes:[60,61,63,64,66,67,69,70,72,70,69,67,66,64,63,61,60], tonic:60,
+   why:'Alternates half and whole steps. A jazz scale for tense, exciting lines over seventh chords.', song:'Jazz',
+   tip:'Go slowly and count: half, whole, half, whole. It\u{2019}s one of the hardest to sing in tune.'},
+  {id:'maj7', g:'chords', t:'Major 7th arpeggio', s:'1 3 5 7 8 (do mi sol ti do)', tempo:84, len:1,
+   notes:[60,64,67,71,72,71,67,64,60], tonic:60,
+   why:'The smooth, sophisticated chord of jazz, neo-soul and R&B ballads. Fmaj7 in We Belong Together is one.', song:'Jazz, R&B ballads',
+   tip:'Ti sits a half step under the top do. Tune it close.'},
+  {id:'min7', g:'chords', t:'Minor 7th arpeggio', s:'1 \u{266D}3 5 \u{266D}7 8 (do me sol te do)', tempo:84, len:1,
+   notes:[60,63,67,70,72,70,67,63,60], tonic:60,
+   why:'The mellow minor chord all over R&B and jazz. Em7 in We Belong Together is one.', song:'R&B, jazz',
+   tip:'Me and te are the minor colors. Let them feel warm, not sad.'},
+  {id:'dom7', g:'chords', t:'Dominant 7th arpeggio', s:'1 3 5 \u{266D}7 8 (do mi sol te do)', tempo:88, len:1,
+   notes:[60,64,67,70,72,70,67,64,60], tonic:60,
+   why:'The bluesy chord that wants to move somewhere. The backbone of blues, gospel and rock.', song:'Blues, gospel, rock',
+   tip:'Te gives it the bluesy tension. Try singing it with a little grit.'},
+  {id:'maj9', g:'chords', t:'Major 9th arpeggio', s:'1 3 5 7 9', tempo:80, len:1,
+   notes:[60,64,67,71,74,71,67,64,60], tonic:60,
+   why:'A lush jazz and gospel sound. Singers often end runs on the 9th (re up top) for a sweet, open finish.', song:'Jazz, gospel',
+   tip:'The top note is re, above do. It sounds unfinished in a pretty way.'},
+  {id:'min9', g:'chords', t:'Minor 9th arpeggio', s:'1 \u{266D}3 5 \u{266D}7 9', tempo:80, len:1,
+   notes:[60,63,67,70,74,70,67,63,60], tonic:60,
+   why:'The classic neo-soul chord. Very common in R&B runs and ad-libs.', song:'Neo-soul, R&B',
+   tip:'Ride it up and down smoothly, like one long breath.'},
+  {id:'iivi', g:'chords', t:'ii\u{2013}V\u{2013}I (jazz progression)', s:'Dm7 \u{B7} G7 \u{B7} Cmaj7', tempo:88, len:1, chords:true,
+   notes:[62,65,69,72, 67,71,74,77, 60,64,67,71], tonic:60,
+   groups:[[62,65,69,72],[67,71,74,77],[60,64,67,71]],
+   why:'The most important chord progression in jazz, and common in gospel and R&B. Hearing it helps you know where a melody is heading.', song:'Jazz standards, gospel',
+   tip:'Each chord sounds first, then its notes. Notice how G7 pulls toward Cmaj7.'},
+  {id:'g_pop', g:'groove', t:'Pop: on the beat', s:'tight and precise', groove:true, feel:'pop', tempo:100, tonic:60,
+   why:'Pop singers usually lock right on the beat with the drums: clean, precise and punchy. Learn this first. Every other feel is measured from here.', song:'Most pop songs',
+   tip:'Tap your foot on the kick drum. Every note should land exactly with a drum hit or halfway between.'},
+  {id:'g_rock', g:'groove', t:'Rock: on top of the beat', s:'driving, a hair early', groove:true, feel:'rock', tempo:116, tonic:60,
+   why:'Rock singers often sit right on top of the beat, even a hair early. It sounds urgent and energetic.', song:'Rock songs',
+   tip:'Think forward motion. Consonants hit hard and early, right with the snare.'},
+  {id:'g_rnb', g:'groove', t:'R&B: laid back', s:'a little behind the beat', groove:true, feel:'rnb', tempo:84, tonic:60,
+   why:'Many R&B and neo-soul singers lay back: notes land a split second after the drum. It sounds relaxed and cool. It only works if your inner pulse stays steady.', song:'We Belong Together verses, neo-soul',
+   tip:'Keep your foot exactly on the beat, and let your voice arrive just after it. Foot steady, voice relaxed.'},
+  {id:'g_jazz', g:'groove', t:'Jazz: swing and float behind', s:'long-short eighths, behind the beat', groove:true, feel:'jazz', tempo:132, tonic:60,
+   why:'Jazz uses swung eighths (long-short, like "doo-ba doo-ba") and singers often float well behind the beat, then catch up.', song:'Jazz standards',
+   tip:'Say "doo-ba doo-ba" along with the ride cymbal first. Then sing the phrase with that bounce.'},
+  {id:'g_ballad', g:'groove', t:'Ballad: flexible time (rubato)', s:'stretch and relax the tempo', groove:true, feel:'ballad', tempo:66, tonic:60,
+   why:'In ballads, singers stretch some notes and hurry others to shape the emotion, while the piano keeps the ground steady. This is called rubato.', song:'Ballads',
+   tip:'Stretch the middle of the phrase, then catch up by the end so you land with the next chord.'},
+  {id:'five', g:'warm', t:'5-note scale', s:'1-2-3-4-5-4-3-2-1 on "ah" or "mee"', tempo:96, len:1, cue:true,
+   pattern:[0,2,4,5,7,5,4,2,0], roots:[57,58,59,60,61,62,63,64,65,66,67],
+   why:'The most common warm-up in American voice lessons. It builds a smooth, even scale through the middle voice.', song:'Every lesson',
+   tip:'Same tone quality on every note. Don\u{2019}t let the top note get pushed.'},
+  {id:'nine', g:'warm', t:'9-note scale', s:'1 up to 9 and back', tempo:92, len:.5, cue:true,
+   pattern:[0,2,4,5,7,9,11,12,14,12,11,9,7,5,4,2,0], roots:[57,58,59,60,61,62,63,64,65],
+   why:'A longer scale that crosses the break between registers. Great for building a smooth mix.', song:'Every lesson',
+   tip:'One breath for the whole scale. Lighten up as you go over the top.'},
+  {id:'stacc', g:'warm', t:'Staccato arpeggio', s:'1-3-5-8-5-3-1 on short "ha"', tempo:96, len:1, cue:true, stac:true,
+   pattern:[0,4,7,12,7,4,0], roots:[60,61,62,63,64,65,66,67],
+   why:'Short, bouncy notes train clean onsets and a lively breath connection.', song:'Every lesson',
+   tip:'Each note is a tiny laugh from the belly, not a push from the throat.'},
+  {id:'agil', g:'warm', t:'Agility pattern', s:'1-2-3-2-1-2-3-4-5-4-3-2-1', tempo:80, len:.5, cue:true,
+   pattern:[0,2,4,2,0,2,4,5,7,5,4,2,0], roots:[58,59,60,61,62,63,64,65],
+   why:'A classic flexibility pattern that prepares the voice for runs in any style.', song:'Every lesson',
+   tip:'Start slow. Speed comes from clean notes, not from rushing.'},
+  {id:'messa', g:'warm', t:'Messa di voce', s:'one note: soft \u{2192} loud \u{2192} soft', tempo:60, len:8, cue:true, swell:true,
+   pattern:[0], roots:[60,62,64,65,67],
+   why:'A classical exercise for breath control and smooth volume changes. It helps every style, from ballads to belting.', song:'Every lesson',
+   tip:'Follow the bar under the controls: grow from soft to loud and back, with no bump in the sound.'},
   {id:'slide', g:'licks', t:'The Mariah slide', s:'re me mi re \u{B7} mi me re do', tempo:66, len:.5,
    notes:[62,63,64,62, 64,63,62,60, 62,63,64,62, 64,63,62,60], tonic:60,
    why:'Her most-used ornament in this song: a quick slide through D, E\u{266D}, E.', song:'Around 0:24, 1:05, 1:31',
@@ -331,6 +447,31 @@ const EX = [
    tip:'Bright "nay", soft palate high, pocket open. Stop the ladder the moment it feels like shouting.'}
 ];
 EX.forEach(e => { e.c = COLORS[e.g]; });
+const TAGS = {cmaj:['all'], range:['song','pop','ballad'], cpent:['pop','rnb','gospel','rock','song'], apent:['pop','rnb','rock','song'], cblues:['rnb','gospel','jazz','rock','song'],
+  arps:['song','pop','rnb','ballad'], sus:['pop','rnb'], mangong:['rnb','song'], yo:['pop','rnb','song'], fpent:['rnb','song'], gpent:['rnb','song'], dmin:['rnb','song'], emin:['rnb','rock','song'],
+  dompent:['gospel','rnb'], min6:['rnb','jazz'], slide:['song','rnb'], runpent:['song','rnb','pop'], turn:['rnb','gospel','pop'], casc3:['rnb','gospel','pop','song'], casc4:['rnb','gospel','pop'],
+  ablues:['rnb','rock','jazz'], bluesrun:['rnb','gospel','rock'], leap:['rnb','pop','ballad','song'], yeah:['rnb','song'], adlib:['song','rnb'],
+  natmin:['pop','ballad','rnb','rock'], harmin:['ballad','rnb','pop'], melmin:['jazz'], dorian:['rnb','jazz','rock'], mixo:['gospel','rock','pop'], lydian:['pop','ballad'],
+  chrom:['all'], whole:['jazz'], dimsc:['jazz'], maj7:['jazz','rnb','ballad'], min7:['rnb','jazz','song'], dom7:['gospel','rock','jazz'], maj9:['jazz','gospel'], min9:['rnb','jazz'], iivi:['jazz','gospel'],
+  g_pop:['pop','all'], g_rock:['rock'], g_rnb:['rnb','song'], g_jazz:['jazz'], g_ballad:['ballad','song'],
+  five:['all'], nine:['all'], stacc:['all'], agil:['all'], messa:['all','ballad'], low:['all','song'], trill:['all','song'], octave:['all','song'], belt:['pop','rnb','rock','song']};
+EX.forEach(e => { e.tags = TAGS[e.id] || ['all']; });
+const FILTERS = [['any','All'], ['song','This song'], ['pop','Pop'], ['rnb','R&B'], ['ballad','Ballads'], ['gospel','Gospel'], ['jazz','Jazz'], ['rock','Rock']];
+const KEYS = [['C',0],['D\u{266D}',1],['D',2],['E\u{266D}',3],['E',4],['F',5],['F\u{266F}',6],['G',-5],['A\u{266D}',-4],['A',-3],['B\u{266D}',-2],['B',-1]];
+const FEELS = {
+  pop:{n:'Pop', off:0, swing:0, desc:'Pop feel: right on the beat'},
+  rock:{n:'Rock', off:-.02, swing:0, desc:'Rock feel: on top of the beat, pushing'},
+  rnb:{n:'R&B', off:.065, swing:0, desc:'R&B feel: laid back, just behind the beat'},
+  jazz:{n:'Jazz', off:.09, swing:1, desc:'Jazz feel: swung and floating behind'},
+  ballad:{n:'Ballad', off:0, swing:0, rubato:true, desc:'Ballad feel: stretched time (rubato)'}};
+const GPHRASE = [[0,64,1],[1,67,1],[2,69,2],[4,67,1],[5,64,1],[6,62,2],[8,60,1],[9,62,1],[10,64,2],[12,67,3]];
+function gOnset(k, beat, f, styled) {
+  let t = f.swing ? (Math.floor(k / 2) + (k % 2 ? 2 / 3 : 0)) * beat : k * beat / 2;
+  if (styled && f.rubato) t = t * (1 + .14 * Math.sin(Math.PI * k / 14));
+  return t + (styled ? f.off : 0);
+}
+const trOK = e => !e.pattern;
+const off = () => trOK(S.ex) ? S.keyOff : 0;
 const PENTA = [0, 2, 4, 7, 9];
 const JAM_CHORDS = [
   {n:'Fmaj7', v:[53,57,60,64], pcs:[5,9,0,4]}, {n:'G', v:[55,59,62], pcs:[7,11,2]},
@@ -345,15 +486,17 @@ const saveLog = () => { try { localStorage.setItem('scale-studio-log', JSON.stri
 const todayLog = () => (LOG[dkey(today)] = LOG[dkey(today)] || {done:{}, best:{}});
 
 /* ---------- state ---------- */
-const S = { ex:EX[0], mode:'listen', tempo:80, loop:false, ladder:true, playing:false, events:[], t0:0, runId:0, lastIdx:-1 };
+const S = { keyOff:0, filter:'any', compare:true, ex:EX[0], mode:'listen', tempo:80, loop:false, ladder:true, playing:false, events:[], t0:0, runId:0, lastIdx:-1 };
 
 /* ---------- exercise list ---------- */
 function buildList() {
   const box = $('exlist'); box.innerHTML = '';
   GROUPS.forEach(([g, label]) => {
+    const items = EX.filter(e => e.g === g && (S.filter === 'any' || e.tags.includes(S.filter) || e.tags.includes('all')));
+    if (!items.length) return;
     const wrap = document.createElement('div'); wrap.className = 'group';
     wrap.innerHTML = `<p class="glabel" style="--c:${COLORS[g]}"><i></i>${label}</p>`;
-    EX.filter(e => e.g === g).forEach(e => {
+    items.forEach(e => {
       const b = document.createElement('button'); b.className = 'ex'; b.style.setProperty('--c', e.c);
       b.setAttribute('aria-pressed', e === S.ex);
       const done = !!todayLog().done[e.id];
@@ -362,6 +505,14 @@ function buildList() {
       wrap.appendChild(b);
     });
     box.appendChild(wrap);
+  });
+}
+function buildFilters() {
+  const f = $('filters'); f.innerHTML = '';
+  FILTERS.forEach(([k, label]) => {
+    const b = document.createElement('button'); b.className = 'fchip'; b.textContent = label; b.setAttribute('aria-pressed', S.filter === k);
+    b.onclick = () => { S.filter = k; try { localStorage.setItem('scale-studio-filter', k); } catch (e) {} buildFilters(); buildList(); };
+    f.appendChild(b);
   });
 }
 function selectEx(e) {
@@ -374,6 +525,9 @@ function selectEx(e) {
   $('exWhy').innerHTML = `${e.why} <span class="song">In the song: ${e.song}.</span>`;
   $('exTip').innerHTML = `<b>Tip:</b> ${e.tip}`;
   $('ladderWrap').hidden = !e.pattern;
+  $('cmpWrap').hidden = !(e.groove && e.feel !== 'pop');
+  $('rulerWrap').hidden = !e.groove; $('dyn').hidden = !e.swell;
+  $('keySel').disabled = !trOK(e); $('keySel').title = trOK(e) ? '' : 'This warm-up moves through keys by itself';
   $('scLabel').textContent = e.jam ? 'in the key, last run' : 'in tune, last run';
   $('status').textContent = 'Press Play to hear it.';
   const best = todayLog().best[e.id]; $('scBest').textContent = best != null ? best + '%' : '\u{2013}'; $('scIn').textContent = '\u{2013}';
@@ -381,7 +535,7 @@ function selectEx(e) {
 }
 
 /* ---------- keyboard ---------- */
-const LO = 53, HI = 84, WK = 38;
+const LO = 48, HI = 89, WK = 38;
 const isBlack = m => [1,3,6,8,10].includes(((m % 12) + 12) % 12);
 const keyEl = {};
 (function buildKb() {
@@ -399,21 +553,23 @@ const keyEl = {};
 })();
 function currentNotes() {
   const e = S.ex;
-  if (e.jam) { const o = []; for (let m = 55; m <= 81; m++) if (PENTA.includes(m % 12)) o.push(m); return o; }
-  if (e.notes) return e.notes;
+  const o0 = off();
+  if (e.jam) { const o = []; for (let m = 55; m <= 81; m++) if (PENTA.includes(((m - o0) % 12 + 12) % 12)) o.push(m); return o; }
+  if (e.groove) return GPHRASE.map(x => x[1] + o0);
+  if (e.notes) return e.notes.map(m => m + o0);
   const r = S.curRoot ?? e.roots[0];
   return e.pattern.map(i => r + i);
 }
 function renderStatic() {
   const e = S.ex, notes = currentNotes();
-  const tonic = e.pattern ? (S.curRoot ?? e.roots[0]) : e.tonic;
+  const tonic = e.pattern ? (S.curRoot ?? e.roots[0]) : e.tonic + off();
   Object.entries(keyEl).forEach(([m, k]) => {
     m = +m; const inIt = notes.includes(m);
     k.classList.toggle('in', inIt); k.classList.remove('now', 'ghost');
     k.querySelector('.lab').textContent = inIt ? solf(m, tonic) : '';
     const f = k.querySelector('.fing'); f.hidden = true;
   });
-  if (e.fing && S.mode === 'follow') {
+  if (e.fing && S.mode === 'follow' && !off()) {
     const seen = new Set();
     notes.forEach((m, i) => { if (!seen.has(m) && keyEl[m]) { seen.add(m); const f = keyEl[m].querySelector('.fing'); f.textContent = e.fing[i]; f.hidden = false; } });
   }
@@ -421,7 +577,7 @@ function renderStatic() {
   if (e.jam) { JAM_CHORDS.forEach((c, i) => { const d = document.createElement('div'); d.className = 'chip'; d.innerHTML = `<b>${c.n}</b><span>chord ${i + 1}</span>`; strip.appendChild(d); }); }
   else notes.forEach((m, i) => {
     const c = document.createElement('div'); c.className = 'chip';
-    c.innerHTML = `<b>${solf(m, tonic)}</b><span>${nn(m)}${e.fing ? ' \u{B7} ' + e.fing[i] : ''}</span>`;
+    c.innerHTML = `<b>${solf(m, tonic)}</b><span>${nn(m)}${e.fing && !off() ? ' \u{B7} ' + e.fing[i] : ''}</span>`;
     strip.appendChild(c);
   });
   const rl = $('rootline');
@@ -429,6 +585,15 @@ function renderStatic() {
     rl.hidden = false;
     rl.innerHTML = 'Ladder: ' + (S.ladder ? e.roots : [e.roots[0]]).map(r => `<span class="rchip ${r === (S.curRoot ?? e.roots[0]) ? 'now' : ''}">${nn(r)}</span>`).join('');
   } else rl.hidden = true;
+  if (e.groove) renderRuler();
+}
+function renderRuler() {
+  const f = FEELS[S.ex.feel], beat = 60 / S.tempo, span = 8 * beat, r = $('ruler'); r.innerHTML = '';
+  for (let b = 0; b <= 8; b++) { const d = document.createElement('div'); d.className = 'bl' + (b % 4 === 0 ? ' b' : ''); d.style.left = (b / 8 * 100) + '%'; if (b < 8) d.innerHTML = `<span>${b % 4 + 1}</span>`; r.appendChild(d); }
+  GPHRASE.forEach(([k], i) => {
+    const g = document.createElement('div'); g.className = 'dot grid'; g.style.left = (gOnset(k, beat, f, false) / span * 100) + '%'; r.appendChild(g);
+    const d = document.createElement('div'); d.className = 'dot'; d.dataset.i = i; d.style.left = (Math.min(span, gOnset(k, beat, f, true)) / span * 100) + '%'; r.appendChild(d);
+  });
 }
 
 /* ---------- audio ---------- */
@@ -463,6 +628,32 @@ function piano(m, t, dur, vel, out) {
   const end = t + dur + .8;
   o1.start(t); o2.start(t); o1.stop(end); o2.stop(end);
 }
+let noiseBuf = null;
+function noise(t, dur, type, freq, q, vol, out) {
+  if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = q;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  s.connect(f); f.connect(g); g.connect(out); s.start(t); s.stop(t + dur + .02);
+}
+function kick(t, v, out) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + .12);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + .28);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t + .3);
+}
+function snare(t, v, out) { noise(t, .16, 'bandpass', 1900, .7, v, out); const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 190; g.gain.setValueAtTime(v * .5, t); g.gain.exponentialRampToValueAtTime(.001, t + .08); o.connect(g); g.connect(out); o.start(t); o.stop(t + .1); }
+function hat(t, v, out) { noise(t, .045, 'highpass', 7500, .7, v, out); }
+function ride(t, v, out) { noise(t, .28, 'bandpass', 5200, 1.2, v, out); }
+function drums(t0, feel, bars, beat, out) {
+  for (let b = 0; b < bars; b++) {
+    const bt = t0 + b * 4 * beat, at = x => bt + x * beat;
+    if (feel === 'pop') { [0, 2].forEach(x => kick(at(x), .8, out)); [1, 3].forEach(x => snare(at(x), .45, out)); for (let i = 0; i < 8; i++) hat(at(i / 2), i % 2 ? .07 : .12, out); }
+    if (feel === 'rock') { [0, 2, 2.5].forEach(x => kick(at(x), .9, out)); [1, 3].forEach(x => snare(at(x), .6, out)); for (let i = 0; i < 8; i++) hat(at(i / 2), .15, out); }
+    if (feel === 'rnb') { [0, 1.75, 2.5].forEach(x => kick(at(x), .8, out)); [1, 3].forEach(x => snare(at(x) + .015, .4, out)); for (let i = 0; i < 16; i++) hat(at(i / 4 + (i % 2 ? .06 : 0)), i % 2 ? .05 : .09, out); }
+    if (feel === 'jazz') { [0, 1, 1 + 2 / 3, 2, 3, 3 + 2 / 3].forEach((x, i) => ride(at(x), i % 3 === 2 ? .06 : .1, out)); [1, 3].forEach(x => hat(at(x), .08, out)); kick(at(0), .25, out); }
+  }
+}
 function click(t, accent, out) {
   const o = ac.createOscillator(), g = ac.createGain();
   o.frequency.value = accent ? 1600 : 1100; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(accent ? .25 : .15, t + .002); g.gain.exponentialRampToValueAtTime(.001, t + .05);
@@ -476,23 +667,45 @@ function buildEvents() {
   let t = 0;
   // count-in: 4 clicks
   for (let i = 0; i < 4; i++) { ev.push({t, d:beat, kind:'count', i}); t += beat; }
+  if (e.groove) {
+    const f = FEELS[e.feel], o = off(), bar = 4 * beat;
+    const cycles = 4;
+    for (let k = 0; k < cycles; k++) {
+      const styled = e.feel === 'pop' || !S.compare || k % 2 === 1;
+      ev.push({t, d:2 * bar, kind:'drums', feel:e.feel, bars:2});
+      ev.push({t, d:bar * .95, kind:'chord', notes:[48, 52, 55, 60].map(m => m + o), jam:true});
+      ev.push({t:t + bar, d:bar * .95, kind:'chord', notes:[53, 57, 60, 65].map(m => m + o), jam:true});
+      ev.push({t, d:2 * bar, kind:'glabel', text:styled ? f.desc : 'Exactly on the beat (for comparison)'});
+      GPHRASE.forEach(([q, m, l], i) => ev.push({t:t + gOnset(q, beat, f, styled), d:l * beat / 2 * .9, m:m + o, kind:S.mode === 'follow' ? 'ghost' : 'play', i}));
+      t += 2 * bar;
+      if (S.mode === 'echo') {
+        ev.push({t, d:2 * bar, kind:'drums', feel:e.feel, bars:2});
+        ev.push({t, d:bar * .95, kind:'chord', notes:[48, 52, 55, 60].map(m => m + o), jam:true});
+        ev.push({t:t + bar, d:bar * .95, kind:'chord', notes:[53, 57, 60, 65].map(m => m + o), jam:true});
+        ev.push({t, d:2 * bar, kind:'free', groove:true});
+        GPHRASE.forEach(([q, m, l], i) => ev.push({t:t + gOnset(q, beat, f, true), d:l * beat / 2 * .9, m:m + o, kind:'ghost', i}));
+        t += 2 * bar;
+      }
+    }
+    return {ev, total:t + beat};
+  }
   if (e.jam) {
     const cycles = 8;
     for (let k = 0; k < cycles; k++) {
       const demo = S.mode !== 'follow' && k % 2 === 0;
-      JAM_CHORDS.forEach((c, ci) => ev.push({t:t + ci * beat, d:beat, kind:'chord', notes:c.v, jam:true, ci, demo}));
-      if (demo) JAM_IDEAS[(k / 2) % JAM_IDEAS.length].forEach((m, i) => ev.push({t:t + i * beat * .5, d:beat * .5, m, kind:'play', i:-1}));
+      JAM_CHORDS.forEach((c, ci) => ev.push({t:t + ci * beat, d:beat, kind:'chord', notes:c.v.map(m => m + off()), jam:true, ci, demo}));
+      if (demo) JAM_IDEAS[(k / 2) % JAM_IDEAS.length].forEach((m, i) => ev.push({t:t + i * beat * .5, d:beat * .5, m:m + off(), kind:'play', i:-1}));
       else ev.push({t, d:beat * 4, kind:'free'});
       t += beat * 4;
     }
     return {ev, total:t + beat};
   }
-  const blocks = e.pattern ? (S.ladder ? e.roots : [e.roots[0]]).map(r => ({root:r, notes:e.pattern.map(i => r + i)})) : [{root:null, notes:e.notes}];
+  const blocks = e.pattern ? (S.ladder ? e.roots : [e.roots[0]]).map(r => ({root:r, notes:e.pattern.map(i => r + i)})) : [{root:null, notes:e.notes.map(m => m + off())}];
   blocks.forEach(b => {
     if (e.cue && b.root != null) { ev.push({t, d:beat * 1.5, kind:'cue', root:b.root}); t += beat * 2; }
     const start = t;
     b.notes.forEach((m, i) => {
-      if (e.chords && i % 4 === 0) { ev.push({t, d:beat * 1.8, kind:'chord', notes:e.groups[i / 4]}); t += beat * 2; }
+      if (e.chords && i % 4 === 0) { ev.push({t, d:beat * 1.8, kind:'chord', notes:e.groups[i / 4].map(m => m + off())}); t += beat * 2; }
       const last = i === b.notes.length - 1;
       ev.push({t, d:last ? Math.max(L, beat) * 1.6 : L, m, kind:S.mode === 'follow' ? 'follow' : 'play', root:b.root, i});
       t += last ? Math.max(L, beat) * 1.6 : L;
@@ -518,10 +731,11 @@ async function play() {
   ev.forEach(x => {
     const t = S.t0 + x.t;
     if (x.kind === 'count') click(t, x.i === 0, runGain);
-    else if (x.kind === 'play') piano(x.m, t, x.d * .92, .55, runGain);
+    else if (x.kind === 'play') piano(x.m, t, x.d * (S.ex.stac ? .28 : .92), .55, runGain);
+    else if (x.kind === 'drums') drums(t, x.feel, x.bars, 60 / S.tempo, runGain);
     else if (x.kind === 'follow') click(t, x.i === 0, runGain);
     else if (x.kind === 'cue') [0, 4, 7].forEach(i => piano(x.root + i - 12 >= 48 ? x.root + i - 12 : x.root + i, t, x.d, .28, runGain));
-    else if (x.kind === 'chord') x.notes.forEach(m => piano(x.jam ? m : m - 12, t, x.d * (x.jam ? .95 : 1), x.jam ? .2 : .26, runGain));
+    else if (x.kind === 'chord') x.notes.forEach(m => piano(x.jam ? m : m - 12, t, x.d * (x.jam ? .95 : 1), x.jam ? (S.ex.groove ? .14 : .2) : .26, runGain));
   });
   $('playBtn').textContent = '\u{25A0} Stop';
 }
@@ -554,6 +768,10 @@ $('playBtn').onclick = () => S.playing ? stop() : play();
 $('tempo').oninput = e => { S.tempo = +e.target.value; $('tempoOut').textContent = S.tempo + ' BPM'; };
 $('tempo').onchange = () => { if (S.playing) play(); };
 $('loop').onchange = e => S.loop = e.target.checked;
+KEYS.forEach(([n, o]) => { const op = document.createElement('option'); op.value = o; op.textContent = n + (o === 0 ? ' (song key)' : ''); $('keySel').appendChild(op); });
+$('keySel').onchange = e => { S.keyOff = +e.target.value; try { localStorage.setItem('scale-studio-key', S.keyOff); } catch (err) {} stop(true); renderStatic(); $('status').textContent = 'Press Play to hear it.'; };
+$('cmp').onchange = e => { S.compare = e.target.checked; if (S.playing) play(); };
+$('tempo').addEventListener('change', () => { if (S.ex.groove) renderRuler(); });
 $('ladder').onchange = e => { S.ladder = e.target.checked; renderStatic(); if (S.playing) play(); };
 
 /* ---------- pitch detection ---------- */
@@ -641,12 +859,14 @@ function frame() {
         if (cur && keyEl[cur.m]) keyEl[cur.m].classList.add(cur.kind === 'ghost' ? 'ghost' : 'now');
       }
       if (cur) target = cur.m;
+      if (S.ex.groove) document.querySelectorAll('#ruler .dot:not(.grid)').forEach(d => d.classList.toggle('now', !!cur && +d.dataset.i === cur.i));
+      if (S.ex.swell) { const u = cur ? clamp((now - cur.t) / cur.d, 0, 1) : 0; const lvl = Math.sin(Math.PI * u); $('dynB').style.width = Math.round(15 + 85 * lvl) + '%'; if (cur && cur.kind === 'play') { const w = u < .35 ? 'Start soft, grow louder\u{2026}' : u < .6 ? 'Loudest here' : 'Now get softer\u{2026}'; const st = $('status'); if (st.dataset.msg !== w) { st.textContent = w; st.dataset.msg = w; } } }
       if (S.ex.jam) {
         let ch = null; for (const x of S.events) if (x.kind === 'chord' && now >= x.t && now < x.t + x.d) ch = x;
         const key = ch ? ch.t : -1;
         if (key !== S.jamKey) {
           S.jamKey = key;
-          Object.entries(keyEl).forEach(([m, k]) => { m = +m; k.classList.toggle('ghost', !!ch && m >= 60 && m < 72 && JAM_CHORDS[ch.ci].pcs.includes(m % 12)); });
+          Object.entries(keyEl).forEach(([m, k]) => { m = +m; k.classList.toggle('ghost', !!ch && m >= 60 && m < 72 && JAM_CHORDS[ch.ci].pcs.includes(((m - off()) % 12 + 12) % 12)); });
           document.querySelectorAll('#strip .chip').forEach((c, i) => c.classList.toggle('now', !!ch && i === ch.ci));
           if (cur && keyEl[cur.m]) keyEl[cur.m].classList.add('now');
         }
@@ -655,6 +875,7 @@ function frame() {
       const label = lastEv ? lastEv.kind : 'count';
       const msg = label === 'count' ? `Get ready\u{2026} ${4 - (lastEv ? lastEv.i : 0)}` :
         label === 'cue' ? `Key of ${nn(lastEv.root).replace(/\d/, '')}: listen` :
+        S.ex.groove ? (S.events.some(x => x.kind === 'free' && now >= x.t && now < x.t + x.d) ? '<span class="turn">Your turn: sing it back with the same feel</span>' : ((S.events.filter(x => x.kind === 'glabel' && x.t <= now).pop() || {text:'Listen'}).text)) :
         S.ex.jam ? (S.events.some(x => x.kind === 'free' && now >= x.t && now < x.t + x.d) ? '<span class="turn">Your turn: make up an ad-lib</span>' : (S.mode === 'follow' ? '<span class="turn">Sing or play your own ideas over the chords</span>' : 'Listen to the idea')) :
         label === 'chord' ? 'Chord first: listen' :
         (cur && cur.kind === 'ghost') || label === 'yourturn' ? '<span class="turn">Your turn: sing it back</span>' :
@@ -670,7 +891,7 @@ function frame() {
       $('pNeedle').style.left = (50 + clamp(cents, -50, 50)) + '%';
       let msg = `${Math.round(hz(p))} Hz \u{B7} ${cents >= 0 ? '+' : ''}${cents} cents`;
       if (S.ex.jam && S.playing) {
-        const pc = ((p % 12) + 12) % 12, ok = PENTA.some(q => Math.abs(((pc - q + 18) % 12) - 6) < .4);
+        const pc = (((p - off()) % 12) + 12) % 12, ok = PENTA.some(q => Math.abs(((pc - q + 18) % 12) - 6) < .4);
         S.voiced++; if (ok) S.hits++;
         msg = ok ? '\u{2713} In the key: sounds good here' : 'Outside the safe notes: try C, D, E, G or A';
       } else if (target != null) {
@@ -698,7 +919,9 @@ function buildWeek() {
   }
 }
 
-buildList(); selectEx(EX[0]); buildWeek(); requestAnimationFrame(frame);
+try { const fk = localStorage.getItem('scale-studio-filter'); if (fk && FILTERS.some(f => f[0] === fk)) S.filter = fk; const kk = localStorage.getItem('scale-studio-key'); if (kk !== null && KEYS.some(k => String(k[1]) === kk)) { S.keyOff = +kk; } } catch (e) {}
+$('keySel').value = S.keyOff;
+buildFilters(); buildList(); selectEx(EX[0]); buildWeek(); requestAnimationFrame(frame);
 })();
 </script>
 
