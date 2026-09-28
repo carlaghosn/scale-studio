@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Scale Studio">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#6d4cff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Scale Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=DM+Mono:wght@500&display=swap">
+<style>
+[hidden]{display:none!important}
+:root{
+  --bg:#eef1f6; --surface:#ffffff; --surface-2:#f3f5f9; --ink:#15202c; --muted:#5d6878; --line:#d9dfe8;
+  --scales:#6d4cff; --voice:#ff4f6d; --licks:#e8930c; --riffs:#0e9f9a; --penta:#2f7de1; --ok:#159a5b; --warn:#c2410c;
+  --key-w:#fbfaf7; --key-b:#1c2230; --key-line:#c5ccd8;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#0e131a; --surface:#161d27; --surface-2:#1d2531; --ink:#e9eef5; --muted:#9aa7b8; --line:#29323f;
+    --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0e131a; --surface:#161d27; --surface-2:#1d2531; --ink:#e9eef5; --muted:#9aa7b8; --line:#29323f;
+  --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:clamp(16px,3vw,28px);padding-block:20px 44px}
+header.top{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.eyebrow{font:500 11.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 clamp(32px,4.6vw,52px)/.98 var(--display);margin:4px 0 0;letter-spacing:-.02em}
+.lede{max-width:56ch;margin:0;color:var(--muted)}
+button,select,input{font:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{outline:3px solid var(--scales);outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:280px minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media (max-width:1180px){.grid{grid-template-columns:260px minmax(0,1fr)}.side-r{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:16px}}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}.side-r{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h2{font:800 19px var(--display);margin:0 0 4px;letter-spacing:-.01em}
+.hint{margin:0 0 10px;color:var(--muted);font-size:13.5px}
+
+/* exercise list */
+.group{margin-top:12px}
+.group:first-of-type{margin-top:4px}
+.glabel{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.glabel i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.ex{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:10px;padding:8px;cursor:pointer;color:var(--ink)}
+.ex:hover{background:var(--surface-2)}
+.ex[aria-pressed="true"]{background:var(--surface-2);border-color:var(--c);box-shadow:inset 3px 0 0 var(--c)}
+.ex b{display:block;font-size:14.5px;line-height:1.25}
+.ex small{display:block;color:var(--muted);font-size:12.5px;line-height:1.3;margin-top:2px}
+.ex .tick{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:#fff;margin-top:1px}
+.ex .tick.on{background:var(--ok);border-color:var(--ok)}
+
+/* main */
+.exhead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between}
+.exhead h2{font:800 clamp(22px,2.6vw,30px) var(--display);margin:0;letter-spacing:-.015em}
+.pill{display:inline-block;font:700 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#fff;background:var(--c)}
+.why{margin:8px 0 0;font-size:14.5px;max-width:75ch}
+.why .song{color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:14px}
+.play{font:800 16px var(--body);background:var(--c);color:#fff;border:0;border-radius:999px;padding:11px 22px;cursor:pointer;min-width:132px}
+.play:hover{filter:brightness(1.08)}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13.5px;border-radius:7px;padding:7px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.ctl{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+.ctl output{font:500 13px var(--mono);min-width:56px}
+.ctl input[type=range]{width:130px;accent-color:var(--c)}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px}
+.status{margin-top:12px;min-height:30px;font:700 15px var(--body);display:flex;align-items:center;gap:10px}
+.status .turn{background:var(--c);color:#fff;border-radius:8px;padding:3px 10px}
+
+/* keyboard */
+.kbwrap{overflow-x:auto;margin-top:14px;padding-bottom:4px}
+.kb{position:relative;height:150px}
+.wk{position:absolute;top:0;width:38px;height:150px;border:1px solid var(--key-line);border-radius:0 0 8px 8px;background:var(--key-w);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:6px;gap:2px;color:#6b7383}
+.bk{position:absolute;top:0;width:24px;height:92px;background:var(--key-b);border-radius:0 0 6px 6px;cursor:pointer;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:5px;color:#dfe5ee}
+.wk .nm{font:500 10px var(--mono)}
+.lab{font:700 11px var(--body);line-height:1}
+.fing{font:700 10px var(--mono);border-radius:50%;width:16px;height:16px;display:grid;place-items:center}
+.wk.in{background:color-mix(in srgb,var(--c) 18%,#fff);border-color:color-mix(in srgb,var(--c) 45%,#c5ccd8)}
+.bk.in{background:color-mix(in srgb,var(--c) 55%,#1c2230)}
+.wk.in .lab{color:#1a1030}
+.wk.now,.bk.now{background:var(--c)!important;color:#fff}
+.wk.now .lab,.wk.now .nm{color:#fff}
+.wk.ghost,.bk.ghost{box-shadow:inset 0 0 0 3px var(--c)}
+.wk .fing{background:#1c2230;color:#fff}
+.strip{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.chip{border:1px solid var(--line);border-radius:9px;padding:4px 7px;min-width:44px;text-align:center;background:var(--surface-2)}
+.chip b{display:block;font-size:14px;line-height:1.1}
+.chip span{display:block;font:500 10.5px var(--mono);color:var(--muted)}
+.chip.now{background:var(--c);border-color:var(--c);color:#fff}
+.chip.now span{color:#fff}
+.chip.done{opacity:.55}
+.tip{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:14px}
+.tip b{color:var(--c)}
+.tip ul{margin:6px 0 0;padding-left:20px;display:grid;gap:3px}
+.rootline{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;font-size:13.5px;color:var(--muted)}
+.rootline .rchip{border-radius:7px;padding:2px 7px;background:var(--surface-2);font:500 12px var(--mono);color:var(--muted)}
+.rootline .rchip.now{background:var(--c);color:#fff}
+
+/* pitch */
+.meter{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;margin-top:6px}
+.bignote{font:800 44px/1 var(--display);min-width:92px}
+.cents{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--warn),var(--ok) 42%,var(--ok) 58%,var(--warn));position:relative;opacity:.85}
+.cents i{position:absolute;top:-4px;width:4px;height:22px;border-radius:2px;background:var(--ink);left:50%;transform:translateX(-2px);transition:left .08s}
+.pinfo{font-size:13px;color:var(--muted)}
+#trace{width:100%;height:150px;display:block;margin-top:10px;border-radius:10px;background:var(--surface-2)}
+.score{display:flex;gap:10px;margin-top:10px}
+.score div{flex:1;background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.score b{display:block;font:800 22px var(--display)}
+.score span{font-size:12px;color:var(--muted)}
+.mbtn{font:700 14px var(--body);border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+.mbtn[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:6px}
+.day{text-align:center;border-radius:9px;background:var(--surface-2);padding:6px 2px;font-size:11.5px;color:var(--muted)}
+.day b{display:block;font:800 16px var(--display);color:var(--ink)}
+.day.today{box-shadow:inset 0 0 0 2px var(--scales)}
+.day.full b{color:var(--ok)}
+.side-r{display:grid;gap:16px}
+@media (prefers-reduced-motion: reduce){.cents i{transition:none}}
+</style>
+<style>body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">We Belong Together &#xB7; key of C &#xB7; self-practice</div>
+      <h1>Scale Studio</h1>
+    </div>
+    <p class="lede">The scales and warm-ups behind the song, played on piano. Listen, sing it back, or follow the lights on your own piano. Turn on the mic to see if you're in tune.</p>
+  </header>
+
+  <div class="grid">
+    <nav class="card" aria-label="Exercises">
+      <h2>Today's workout</h2>
+      <p class="hint">Pick about 10 a day, mixing groups. A check mark appears when you finish one today.</p>
+      <div id="exlist"></div>
+    </nav>
+
+    <main class="card" id="main" aria-live="polite">
+      <div class="exhead"><h2 id="exTitle"></h2><span class="pill" id="exPill"></span></div>
+      <p class="why" id="exWhy"></p>
+      <div class="controls">
+        <button class="play" id="playBtn">&#x25B6; Play</button>
+        <div class="seg" role="group" aria-label="How to practice">
+          <button id="m-listen" aria-pressed="true">Sing along</button>
+          <button id="m-echo" aria-pressed="false">Echo: I sing back</button>
+          <button id="m-follow" aria-pressed="false">I play it</button>
+        </div>
+        <label class="ctl" for="tempo">Tempo <input type="range" id="tempo" min="40" max="140" step="2" value="80"><output id="tempoOut">80 BPM</output></label>
+        <label class="chk"><input type="checkbox" id="loop"> Repeat</label>
+        <label class="chk" id="ladderWrap"><input type="checkbox" id="ladder" checked> Move up by half steps</label>
+      </div>
+      <div class="status" id="status">Press Play to hear it.</div>
+      <div class="kbwrap"><div class="kb" id="kb"></div></div>
+      <div class="rootline" id="rootline" hidden></div>
+      <div class="strip" id="strip"></div>
+      <p class="tip" id="exTip"></p>
+    </main>
+
+    <aside class="side-r">
+      <section class="card">
+        <h2>Pitch check</h2>
+        <p class="hint">Sing while it plays. The line shows your voice; the colored bars show the target notes.</p>
+        <button class="mbtn" id="micBtn" aria-pressed="false">&#x1F3A4; Turn on mic</button>
+        <div class="meter">
+          <div class="bignote" id="pNote">&#x2013;</div>
+          <div><div class="cents" aria-hidden="true"><i id="pNeedle"></i></div><div class="pinfo" id="pInfo">Mic off</div></div>
+        </div>
+        <canvas id="trace" width="600" height="300" aria-label="Pitch trace"></canvas>
+        <div class="score"><div><b id="scIn">&#x2013;</b><span id="scLabel">in tune, last run</span></div><div><b id="scBest">&#x2013;</b><span>best today, this exercise</span></div></div>
+        <p class="note" id="micNote">Nothing is recorded or saved. The mic only listens while it is on.</p>
+      </section>
+      <section class="card">
+        <h2>This week</h2>
+        <p class="hint">Exercises finished each day. Aim for 10.</p>
+        <div class="week" id="week"></div>
+        <p class="note">Voice first: if anything feels scratchy or tight, stop, sip water and go lighter. Slow and in tune beats fast and sloppy.</p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const NAMES = ['C','C\u{266F}','D','E\u{266D}','E','F','F\u{266F}','G','A\u{266D}','A','B\u{266D}','B'];
+const nn = m => NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+const SOLF = ['do','di','re','me','mi','fa','fi','sol','le','la','te','ti'];
+const solf = (m, tonic) => SOLF[((m - tonic) % 12 + 12) % 12];
+const COLORS = { scales:'var(--scales)', voice:'var(--voice)', licks:'var(--licks)', riffs:'var(--riffs)', penta:'var(--penta)' };
+const GROUPS = [['scales','Scales & ear'], ['penta','The pentatonic family'], ['licks','Song licks'], ['riffs','R&B riffs, runs & ad-libs'], ['voice','Voice builders']];
+
+/* ---------- exercises ---------- */
+// notes: absolute MIDI (C4 = 60). pattern+roots: intervals repeated on each root (ladder).
+const EX = [
+  {id:'cmaj', g:'scales', t:'C major scale', s:'do re mi fa sol la ti do', tempo:80, len:1,
+   notes:[60,62,64,65,67,69,71,72,71,69,67,65,64,62,60], fing:[1,2,3,1,2,3,4,5,4,3,2,1,3,2,1], tonic:60,
+   why:'Home base. The whole song is in C major, so every note she sings sits on this scale.', song:'Whole song',
+   tip:'Right hand fingering is shown on the keys: thumb tucks under after mi going up, and 3 crosses over going down.'},
+  {id:'range', g:'scales', t:'C major across the song\u{2019}s range', s:'G3 up to A5 and back', tempo:72, len:1,
+   notes:[55,57,59,60,62,64,65,67,69,71,72,74,76,77,79,81,79,77,76,74,72,71,69,67,65,64,62,60,59,57,55], tonic:60,
+   why:'The song goes from G3 in the low choruses to A5 at the top of the final chorus. This walks the full distance.', song:'Chorus 1:03 (G3) \u{B7} final chorus 2:40 (A5)',
+   tip:'Stay light at the top. If the high notes squeeze, stop at the highest easy note. You don\u{2019}t need to hit A5 today.'},
+  {id:'cpent', g:'penta', t:'C major pentatonic', s:'do re mi sol la do', tempo:84, len:1,
+   notes:[60,62,64,67,69,72,69,67,64,62,60], tonic:60,
+   why:'Five notes with no fa or ti. Most of Mariah\u{2019}s runs in this song are built from these.', song:'Runs in every chorus',
+   tip:'Feel the skips from mi to sol and la to do. Those gaps are what make it sound like R&B instead of a plain scale.'},
+  {id:'apent', g:'penta', t:'A minor pentatonic', s:'la do re mi sol la', tempo:84, len:1,
+   notes:[57,60,62,64,67,69,67,64,62,60,57], tonic:60,
+   why:'The same five notes starting on A. It gives the sad, soulful color of the verses.', song:'Verses 0:21 and 1:30',
+   tip:'Same keys as the last exercise, a different home note. Hear how starting on la changes the mood.'},
+  {id:'cblues', g:'scales', t:'C major blues scale', s:'do re me mi sol la do', tempo:76, len:1,
+   notes:[60,62,63,64,67,69,72,69,67,64,63,62,60], tonic:60,
+   why:'Adds me (E\u{266D}), the bluesy note between re and mi. It\u{2019}s behind Mariah\u{2019}s signature slides.', song:'Around 0:24, 1:05, 1:31',
+   tip:'Make me a quick passing note that leans into mi. Don\u{2019}t land on it.'},
+  {id:'arps', g:'scales', t:'The song\u{2019}s chords, as arpeggios', s:'Fmaj7 \u{B7} G \u{B7} Em7 \u{B7} F', tempo:88, len:1, chords:true,
+   notes:[65,69,72,76, 67,71,74,79, 64,67,71,74, 65,69,72,77], tonic:60, fing:[1,2,3,5,1,2,3,5,1,2,3,5,1,2,3,5],
+   groups:[[65,69,72,76],[67,71,74,79],[64,67,71,74],[65,69,72,77]],
+   why:'The whole song loops these four chords. Knowing them by ear tells you where each run should land.', song:'Every section',
+   tip:'Each chord sounds first, then its notes one at a time. On piano, play the chord with the left hand and the arpeggio with the right.'},
+  {id:'slide', g:'licks', t:'The Mariah slide', s:'re me mi re \u{B7} mi me re do', tempo:66, len:.5,
+   notes:[62,63,64,62, 64,63,62,60, 62,63,64,62, 64,63,62,60], tonic:60,
+   why:'Her most-used ornament in this song: a quick slide through D, E\u{266D}, E.', song:'Around 0:24, 1:05, 1:31',
+   tip:'Start slow and even, then raise the tempo 4 BPM at a time. Clean at 66 is better than messy at 100.'},
+  {id:'runpent', g:'licks', t:'Pentatonic run, down', s:'la sol mi re do', tempo:70, len:.5,
+   notes:[69,67,64,62,60, 72,69,67,64,62,60, 69,67,64,62,60,62,60], tonic:60,
+   why:'A typical descending R&B run shape made of pentatonic notes.', song:'Chorus endings',
+   tip:'Every note gets its own tiny pulse, like a light "ha". No smearing.'},
+  {id:'turn', g:'riffs', t:'The turn', s:'mi fa mi re mi \u{B7} sol la sol fa sol', tempo:72, len:.5,
+   notes:[64,65,64,62,64, 67,69,67,65,67, 64,65,64,62,60], tonic:60,
+   why:'The simplest R&B ornament: circle the main note from above and below before landing on it.', song:'Small turns all through the verses',
+   tip:'Keep the main note strongest. The notes around it are quick and light, like a flick.'},
+  {id:'casc3', g:'riffs', t:'Pentatonic cascade in 3s', s:'do la sol \u{B7} la sol mi \u{B7} sol mi re \u{B7} mi re do', tempo:62, len:.5,
+   notes:[72,69,67, 69,67,64, 67,64,62, 64,62,60], tonic:60,
+   why:'Most runs are built from small groups of notes. Groups of three stepping down the pentatonic are the most common R&B run shape.', song:'Chorus runs',
+   tip:'Feel it in threes: ONE-two-three. Once it\u2019s clean, raise the tempo 4 BPM at a time.'},
+  {id:'casc4', g:'riffs', t:'Pentatonic cascade in 4s', s:'do la sol mi \u{B7} la sol mi re \u{B7} sol mi re do', tempo:62, len:.5,
+   notes:[72,69,67,64, 69,67,64,62, 67,64,62,60], tonic:60,
+   why:'The same idea in groups of four. Mixing 3s and 4s is how singers make runs sound free.', song:'Chorus runs',
+   tip:'Accent the first note of each group. Try singing it on "yeah" once the notes are solid.'},
+  {id:'fpent', g:'penta', t:'F major pentatonic (for the F chords)', s:'fa sol la do re fa', tempo:80, len:1,
+   notes:[65,67,69,72,74,77,74,72,69,67,65], tonic:60,
+   why:'Every chord has a pentatonic that fits it. Over Fmaj7 and F (half the song\u{2019}s loop) this one sounds sweet and open. Same notes as D minor pentatonic.', song:'Over every Fmaj7 and F chord',
+   tip:'Compare it with C major pentatonic: fa replaces mi. Sing a run from this over F, then from C pentatonic, and hear the difference.'},
+  {id:'gpent', g:'penta', t:'G major pentatonic (for G and Em7)', s:'sol la ti re mi sol', tempo:80, len:1,
+   notes:[67,69,71,74,76,79,76,74,71,69,67], tonic:60,
+   why:'Fits the other half of the loop, the G and Em7 chords. Same notes as E minor pentatonic. Switching pentatonics as the chords change is an advanced R&B trick.', song:'Over every G and Em7 chord',
+   tip:'This one has ti (B) instead of do. Over G, landing on ti or re sounds bright. Over Em7, landing on mi sounds soulful.'},
+  {id:'sus', g:'penta', t:'Suspended pentatonic', s:'re mi sol la do re', tempo:80, len:1,
+   notes:[62,64,67,69,72,74,72,69,67,64,62], tonic:60,
+   why:'The same five notes as C major pentatonic, starting on re. It sounds open and floating, like the song\u{2019}s chords that never quite land on C.', song:'Floating lines over G and Fmaj7',
+   tip:'Every pentatonic "mode" uses the same keys. Only the home note changes, and that changes the mood.'},
+  {id:'mangong', g:'penta', t:'Mi-mode pentatonic', s:'mi sol la do re mi', tempo:80, len:1,
+   notes:[64,67,69,72,74,76,74,72,69,67,64], tonic:60,
+   why:'Same notes again, now starting on mi. It has a minor, soulful sound that sits well over the Em7 chord.', song:'Over Em7',
+   tip:'Land phrases on mi or sol here. Those notes belong to the Em7 chord.'},
+  {id:'yo', g:'penta', t:'Sol-mode pentatonic', s:'sol la do re mi sol', tempo:80, len:1,
+   notes:[67,69,72,74,76,79,76,74,72,69,67], tonic:60,
+   why:'Starting on sol. Bright and hopeful, good for upward runs that lead into the octave-up final chorus.', song:'Build into 2:40',
+   tip:'Try it going up only, getting a little lighter on each note, like a lift into the high chorus.'},
+  {id:'dmin', g:'penta', t:'D minor pentatonic', s:'re fa sol la do re', tempo:80, len:1,
+   notes:[62,65,67,69,72,74,72,69,67,65,62], tonic:60,
+   why:'The same notes as F major pentatonic, starting on re. A darker color for the Fmaj7 and F chords.', song:'Over Fmaj7 and F',
+   tip:'Compare with F major pentatonic: same keys, different home note, sadder mood.'},
+  {id:'emin', g:'penta', t:'E minor pentatonic', s:'mi sol la ti re mi', tempo:80, len:1,
+   notes:[64,67,69,71,74,76,74,71,69,67,64], tonic:60,
+   why:'The same notes as G major pentatonic, starting on mi. It fits Em7 perfectly and is a staple for soulful minor runs.', song:'Over Em7 and G',
+   tip:'Ti (B) is the note that makes it different from A minor pentatonic. Let it ring over Em7.'},
+  {id:'dompent', g:'penta', t:'Gospel (dominant) pentatonic', s:'do re mi sol te do', tempo:78, len:1,
+   notes:[60,62,64,67,70,72,70,67,64,62,60], tonic:60,
+   why:'Swaps la for te (B\u{266D}). This bluesy-bright sound is everywhere in gospel and church-rooted R&B. It doesn\u{2019}t fit this song\u{2019}s chords, but it\u{2019}s a key R&B color to know.', song:'Not used in this song: general R&B vocabulary',
+   tip:'Hear how te pulls back down to la or sol. Save it for other songs.'},
+  {id:'min6', g:'penta', t:'Neo-soul (minor 6) pentatonic', s:'la do re mi fi la', tempo:78, len:1,
+   notes:[57,60,62,64,66,69,66,64,62,60,57], tonic:60,
+   why:'A minor pentatonic with fi (F\u{266F}) in place of sol. It gives the smooth, jazzy color of neo-soul singers. General R&B vocabulary; it clashes with this song\u{2019}s F chords.', song:'Not used in this song: general R&B vocabulary',
+   tip:'F\u{266F} is the special note. Sing it softly and let it resolve down to mi.'},
+  {id:'ablues', g:'riffs', t:'A minor blues scale', s:'la do re me mi sol la', tempo:76, len:1,
+   notes:[57,60,62,63,64,67,69,67,64,63,62,60,57], tonic:60,
+   why:'The minor pentatonic plus one bluesy note (E\u266d). The go-to scale for soulful R&B riffs over the song\u2019s minor chords.', song:'Verses and ad-libs',
+   tip:'Like the major blues scale, E\u266d is a passing note. Slide through it, don\u2019t sit on it.'},
+  {id:'bluesrun', g:'riffs', t:'Blues run down to do', s:'la sol mi me re do \u{B7} sol mi me re do la do', tempo:64, len:.5,
+   notes:[69,67,64,63,62,60, 67,64,63,62,60,57,60], tonic:60,
+   why:'A classic way to end a phrase: run down through the blue note, dip below do, and come home.', song:'Ends of chorus lines',
+   tip:'The last two notes (la up to do) are a little "hook" landing. Make that final do calm and centered.'},
+  {id:'leap', g:'riffs', t:'Leap and cascade', s:'do up to high do, then down the pentatonic', tempo:64, len:.5,
+   notes:[60,72,69,67,64,62,60, 62,74,72,69,67,64,62], tonic:60,
+   why:'Jump up an octave, then pour back down. A signature big-diva move that gets the octave jump into the voice.', song:'Final chorus 2:40',
+   tip:'Land the high note lightly in mix, then let the run fall. No pushing on the leap.'},
+  {id:'yeah', g:'riffs', t:'The "yeah" riff', s:'re mi sol mi re do', tempo:70, len:.5,
+   notes:[62,64,67,64,62,60, 62,64,67,69,67,64,62,60], tonic:60,
+   why:'A short, sing-able riff on "yeah" that fits over the G chord in the song\u2019s loop.', song:'Ad-libs in the outro 3:08',
+   tip:'Sing it on "yeah" with a relaxed jaw. The second time it reaches up to la. Keep it just as easy.'},
+  {id:'adlib', g:'riffs', t:'Ad-lib lab', s:'make up your own over the song\u2019s chords', tempo:69, len:.5, jam:true, tonic:60,
+   why:'Ad-libs are the free, made-up bits between and after the lyrics. Mariah\u2019s intro (0:00 to 0:21) and outro (3:08 to 3:21) are all ad-libs. The chords Fmaj7, G, Em7, F loop the whole time.', song:'Intro and outro',
+   tip:'The page plays an idea, then gives you a turn. The lit keys (C, D, E, G, A) always sound good; outlined keys are the notes of the chord playing right now. Ideas to try:<ul><li>Hum "mm" on mi, then slide up to sol</li><li>"Ooh" on la, falling to sol</li><li>"Yeah" with a 3-note cascade</li><li>Answer the idea you just heard, but change its ending</li><li>Leave space. Silence is part of an ad-lib</li></ul>'},
+  {id:'low', g:'voice', t:'Descending 5-4-3-2-1 down to G3', s:'sol fa mi re do on "ah"', tempo:84, len:1, cue:true,
+   pattern:[7,5,4,2,0], roots:[62,61,60,59,58,57,56,55],
+   why:'Warm, relaxed chest voice for the low choruses, which go down to G3.', song:'Chorus 1:03 and 2:12',
+   tip:'Speak-sing it. Let the voice box stay relaxed. Never push it down to reach the low notes.'},
+  {id:'trill', g:'voice', t:'Lip trill 1-3-5-3-1 through the switch', s:'on a lip trill or "brr"', tempo:92, len:1, cue:true,
+   pattern:[0,4,7,4,0], roots:[60,61,62,63,64,65],
+   why:'Smooths the chest-to-mix switch that happens around E4 to A4 in both pre-choruses.', song:'Pre-choruses 0:49 and 1:58',
+   tip:'Keep the lips buzzing the whole way. If the trill stops, there\u{2019}s too much pressure.'},
+  {id:'octave', g:'voice', t:'Octave slides', s:'1 to 8 and back on "wee"', tempo:72, len:1.5, cue:true,
+   pattern:[0,12,0], roots:[55,56,57,58,59,60],
+   why:'Rehearses the jump into the final chorus, which comes back an octave higher.', song:'Final chorus 2:40',
+   tip:'Slide through every note in between, like a siren. Light on top.'},
+  {id:'belt', g:'voice', t:'Belt-mix arpeggio 1-3-5-8-5-3-1', s:'on "nay" or "mum"', tempo:96, len:1, cue:true,
+   pattern:[0,4,7,12,7,4,0], roots:[60,61,62,63,64,65,66,67,68,69],
+   why:'Builds the bright belt-mix for the octave-up final chorus, topping out at A5.', song:'Final chorus 2:40 to 3:08',
+   tip:'Bright "nay", soft palate high, pocket open. Stop the ladder the moment it feels like shouting.'}
+];
+EX.forEach(e => { e.c = COLORS[e.g]; });
+const PENTA = [0, 2, 4, 7, 9];
+const JAM_CHORDS = [
+  {n:'Fmaj7', v:[53,57,60,64], pcs:[5,9,0,4]}, {n:'G', v:[55,59,62], pcs:[7,11,2]},
+  {n:'Em7', v:[52,55,59,62], pcs:[4,7,11,2]}, {n:'F', v:[53,57,60], pcs:[5,9,0]}];
+const JAM_IDEAS = [[67,69,72,69,67,64,62,64], [64,63,62,60,57,60,62,60], [69,67,64,67,64,62,60,60], [60,62,64,67,69,72,69,67]];
+
+/* ---------- storage ---------- */
+const today = new Date(); const dkey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+let LOG = {};
+try { LOG = JSON.parse(localStorage.getItem('scale-studio-log') || '{}') || {}; } catch (e) { LOG = {}; }
+const saveLog = () => { try { localStorage.setItem('scale-studio-log', JSON.stringify(LOG)); } catch (e) {} };
+const todayLog = () => (LOG[dkey(today)] = LOG[dkey(today)] || {done:{}, best:{}});
+
+/* ---------- state ---------- */
+const S = { ex:EX[0], mode:'listen', tempo:80, loop:false, ladder:true, playing:false, events:[], t0:0, runId:0, lastIdx:-1 };
+
+/* ---------- exercise list ---------- */
+function buildList() {
+  const box = $('exlist'); box.innerHTML = '';
+  GROUPS.forEach(([g, label]) => {
+    const wrap = document.createElement('div'); wrap.className = 'group';
+    wrap.innerHTML = `<p class="glabel" style="--c:${COLORS[g]}"><i></i>${label}</p>`;
+    EX.filter(e => e.g === g).forEach(e => {
+      const b = document.createElement('button'); b.className = 'ex'; b.style.setProperty('--c', e.c);
+      b.setAttribute('aria-pressed', e === S.ex);
+      const done = !!todayLog().done[e.id];
+      b.innerHTML = `<span class="tick ${done ? 'on' : ''}">${done ? '\u{2713}' : ''}</span><span><b>${e.t}</b><small>${e.s}</small></span>`;
+      b.onclick = () => selectEx(e);
+      wrap.appendChild(b);
+    });
+    box.appendChild(wrap);
+  });
+}
+function selectEx(e) {
+  stop();
+  S.ex = e; S.tempo = e.tempo; $('tempo').value = e.tempo; $('tempoOut').textContent = e.tempo + ' BPM';
+  document.querySelectorAll('.ex').forEach(b => b.setAttribute('aria-pressed', b.querySelector('b').textContent === e.t));
+  $('main').style.setProperty('--c', e.c);
+  $('exTitle').textContent = e.t;
+  $('exPill').textContent = GROUPS.find(g => g[0] === e.g)[1]; $('exPill').style.setProperty('--c', e.c);
+  $('exWhy').innerHTML = `${e.why} <span class="song">In the song: ${e.song}.</span>`;
+  $('exTip').innerHTML = `<b>Tip:</b> ${e.tip}`;
+  $('ladderWrap').hidden = !e.pattern;
+  $('scLabel').textContent = e.jam ? 'in the key, last run' : 'in tune, last run';
+  $('status').textContent = 'Press Play to hear it.';
+  const best = todayLog().best[e.id]; $('scBest').textContent = best != null ? best + '%' : '\u{2013}'; $('scIn').textContent = '\u{2013}';
+  renderStatic(); drawTrace();
+}
+
+/* ---------- keyboard ---------- */
+const LO = 53, HI = 84, WK = 38;
+const isBlack = m => [1,3,6,8,10].includes(((m % 12) + 12) % 12);
+const keyEl = {};
+(function buildKb() {
+  const kb = $('kb'); let wi = 0; const x = {};
+  for (let m = LO; m <= HI; m++) if (!isBlack(m)) { x[m] = wi * WK; wi++; }
+  for (let m = LO; m <= HI; m++) if (isBlack(m)) x[m] = x[m - 1] + WK - 12;
+  kb.style.width = wi * WK + 'px';
+  for (let m = LO; m <= HI; m++) {
+    const k = document.createElement('div'); k.className = isBlack(m) ? 'bk' : 'wk'; k.style.left = x[m] + 'px';
+    k.setAttribute('role', 'button'); k.setAttribute('aria-label', nn(m));
+    k.innerHTML = `<span class="fing" hidden></span><span class="lab"></span>${isBlack(m) ? '' : `<span class="nm">${m % 12 === 0 ? nn(m) : ''}</span>`}`;
+    k.addEventListener('pointerdown', () => { ensureAudio(); piano(m, ac.currentTime + .01, .6, .5, master); });
+    kb.appendChild(k); keyEl[m] = k;
+  }
+})();
+function currentNotes() {
+  const e = S.ex;
+  if (e.jam) { const o = []; for (let m = 55; m <= 81; m++) if (PENTA.includes(m % 12)) o.push(m); return o; }
+  if (e.notes) return e.notes;
+  const r = S.curRoot ?? e.roots[0];
+  return e.pattern.map(i => r + i);
+}
+function renderStatic() {
+  const e = S.ex, notes = currentNotes();
+  const tonic = e.pattern ? (S.curRoot ?? e.roots[0]) : e.tonic;
+  Object.entries(keyEl).forEach(([m, k]) => {
+    m = +m; const inIt = notes.includes(m);
+    k.classList.toggle('in', inIt); k.classList.remove('now', 'ghost');
+    k.querySelector('.lab').textContent = inIt ? solf(m, tonic) : '';
+    const f = k.querySelector('.fing'); f.hidden = true;
+  });
+  if (e.fing && S.mode === 'follow') {
+    const seen = new Set();
+    notes.forEach((m, i) => { if (!seen.has(m) && keyEl[m]) { seen.add(m); const f = keyEl[m].querySelector('.fing'); f.textContent = e.fing[i]; f.hidden = false; } });
+  }
+  const strip = $('strip'); strip.innerHTML = '';
+  if (e.jam) { JAM_CHORDS.forEach((c, i) => { const d = document.createElement('div'); d.className = 'chip'; d.innerHTML = `<b>${c.n}</b><span>chord ${i + 1}</span>`; strip.appendChild(d); }); }
+  else notes.forEach((m, i) => {
+    const c = document.createElement('div'); c.className = 'chip';
+    c.innerHTML = `<b>${solf(m, tonic)}</b><span>${nn(m)}${e.fing ? ' \u{B7} ' + e.fing[i] : ''}</span>`;
+    strip.appendChild(c);
+  });
+  const rl = $('rootline');
+  if (e.pattern) {
+    rl.hidden = false;
+    rl.innerHTML = 'Ladder: ' + (S.ladder ? e.roots : [e.roots[0]]).map(r => `<span class="rchip ${r === (S.curRoot ?? e.roots[0]) ? 'now' : ''}">${nn(r)}</span>`).join('');
+  } else rl.hidden = true;
+}
+
+/* ---------- audio ---------- */
+let ac = null, master = null, verb = null, pianoWave = null;
+function ensureAudio() {
+  if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = .7;
+  const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3;
+  verb = ac.createConvolver();
+  const len = Math.floor(ac.sampleRate * 1.6), ir = ac.createBuffer(2, len, ac.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+  verb.buffer = ir; const wet = ac.createGain(); wet.gain.value = .18;
+  master.connect(comp); master.connect(verb); verb.connect(wet); wet.connect(comp); comp.connect(ac.destination);
+  const amps = [0, 1, .42, .26, .16, .1, .06, .04, .025, .015];
+  pianoWave = ac.createPeriodicWave(new Float32Array(amps.length), Float32Array.from(amps));
+}
+// A soft piano-like tone: bright attack that mellows, then decays.
+function piano(m, t, dur, vel, out) {
+  const f = hz(m), g = ac.createGain(), lp = ac.createBiquadFilter();
+  lp.type = 'lowpass'; lp.Q.value = .4;
+  lp.frequency.setValueAtTime(Math.min(9000, f * 9), t); lp.frequency.exponentialRampToValueAtTime(Math.min(4000, f * 3.5), t + .5);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vel, t + .006);
+  g.gain.exponentialRampToValueAtTime(vel * .4, t + .35);
+  g.gain.setTargetAtTime(vel * .18, t + .35, .9);
+  g.gain.setTargetAtTime(0, t + dur, .12);
+  const o1 = ac.createOscillator(), o2 = ac.createOscillator();
+  o1.setPeriodicWave(pianoWave); o2.setPeriodicWave(pianoWave);
+  o1.frequency.value = f; o2.frequency.value = f; o2.detune.value = 4;
+  const g2 = ac.createGain(); g2.gain.value = .45;
+  o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(out);
+  const end = t + dur + .8;
+  o1.start(t); o2.start(t); o1.stop(end); o2.stop(end);
+}
+function click(t, accent, out) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.frequency.value = accent ? 1600 : 1100; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(accent ? .25 : .15, t + .002); g.gain.exponentialRampToValueAtTime(.001, t + .05);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t + .06);
+}
+
+/* ---------- building a run ---------- */
+// events: {t, d, m, kind:'play'|'ghost'|'cue'|'count', root, i}
+function buildEvents() {
+  const e = S.ex, beat = 60 / S.tempo, L = e.len * beat, ev = [];
+  let t = 0;
+  // count-in: 4 clicks
+  for (let i = 0; i < 4; i++) { ev.push({t, d:beat, kind:'count', i}); t += beat; }
+  if (e.jam) {
+    const cycles = 8;
+    for (let k = 0; k < cycles; k++) {
+      const demo = S.mode !== 'follow' && k % 2 === 0;
+      JAM_CHORDS.forEach((c, ci) => ev.push({t:t + ci * beat, d:beat, kind:'chord', notes:c.v, jam:true, ci, demo}));
+      if (demo) JAM_IDEAS[(k / 2) % JAM_IDEAS.length].forEach((m, i) => ev.push({t:t + i * beat * .5, d:beat * .5, m, kind:'play', i:-1}));
+      else ev.push({t, d:beat * 4, kind:'free'});
+      t += beat * 4;
+    }
+    return {ev, total:t + beat};
+  }
+  const blocks = e.pattern ? (S.ladder ? e.roots : [e.roots[0]]).map(r => ({root:r, notes:e.pattern.map(i => r + i)})) : [{root:null, notes:e.notes}];
+  blocks.forEach(b => {
+    if (e.cue && b.root != null) { ev.push({t, d:beat * 1.5, kind:'cue', root:b.root}); t += beat * 2; }
+    const start = t;
+    b.notes.forEach((m, i) => {
+      if (e.chords && i % 4 === 0) { ev.push({t, d:beat * 1.8, kind:'chord', notes:e.groups[i / 4]}); t += beat * 2; }
+      const last = i === b.notes.length - 1;
+      ev.push({t, d:last ? Math.max(L, beat) * 1.6 : L, m, kind:S.mode === 'follow' ? 'follow' : 'play', root:b.root, i});
+      t += last ? Math.max(L, beat) * 1.6 : L;
+    });
+    if (S.mode === 'echo') {
+      t += beat * .5;
+      ev.push({t, d:0, kind:'yourturn', root:b.root});
+      const dur = t - start;
+      b.notes.forEach((m, i) => { const last = i === b.notes.length - 1; ev.push({t, d:last ? Math.max(L, beat) * 1.6 : L, m, kind:'ghost', root:b.root, i}); t += last ? Math.max(L, beat) * 1.6 : L; });
+    }
+    t += beat;
+  });
+  return {ev, total:t};
+}
+let runGain = null;
+async function play() {
+  ensureAudio(); stop(true);
+  if (ac.state !== 'running') { try { await ac.resume(); } catch (e) {} }
+  const {ev, total} = buildEvents();
+  S.events = ev; S.total = total; S.t0 = ac.currentTime + .12; S.playing = true; S.runId++; S.lastIdx = -1;
+  S.hits = 0; S.voiced = 0; S.wallStart = performance.now();
+  runGain = ac.createGain(); runGain.connect(master);
+  ev.forEach(x => {
+    const t = S.t0 + x.t;
+    if (x.kind === 'count') click(t, x.i === 0, runGain);
+    else if (x.kind === 'play') piano(x.m, t, x.d * .92, .55, runGain);
+    else if (x.kind === 'follow') click(t, x.i === 0, runGain);
+    else if (x.kind === 'cue') [0, 4, 7].forEach(i => piano(x.root + i - 12 >= 48 ? x.root + i - 12 : x.root + i, t, x.d, .28, runGain));
+    else if (x.kind === 'chord') x.notes.forEach(m => piano(x.jam ? m : m - 12, t, x.d * (x.jam ? .95 : 1), x.jam ? .2 : .26, runGain));
+  });
+  $('playBtn').textContent = '\u{25A0} Stop';
+}
+function stop(silent) {
+  if (runGain && ac) { const g = runGain; g.gain.setTargetAtTime(0, ac.currentTime, .02); setTimeout(() => g.disconnect(), 300); runGain = null; }
+  const was = S.playing; S.playing = false; S.curRoot = null;
+  $('playBtn').textContent = '\u{25B6} Play';
+  if (!silent) { renderStatic(); if (was) $('status').textContent = 'Stopped.'; }
+}
+function finishRun() {
+  S.playing = false; $('playBtn').textContent = '\u{25B6} Play';
+  const d = todayLog();
+  const real = (performance.now() - S.wallStart) / 1000 >= S.total * .8;
+  if (real) d.done[S.ex.id] = true;
+  if (mic.on && S.voiced > 10) {
+    const pct = Math.round(100 * S.hits / S.voiced);
+    $('scIn').textContent = pct + '%';
+    d.best[S.ex.id] = Math.max(d.best[S.ex.id] || 0, pct); $('scBest').textContent = d.best[S.ex.id] + '%';
+  }
+  saveLog(); buildList(); buildWeek();
+  $('status').innerHTML = real ? `<span>Done! \u{2713}</span>` : 'Press Play to hear it.';
+  S.curRoot = null; renderStatic();
+  if (S.loop) setTimeout(() => { if (!S.playing) play(); }, 700);
+}
+$('playBtn').onclick = () => S.playing ? stop() : play();
+['listen','echo','follow'].forEach(m => $('m-' + m).onclick = () => {
+  S.mode = m; ['listen','echo','follow'].forEach(k => $('m-' + k).setAttribute('aria-pressed', k === m));
+  if (S.playing) play(); else renderStatic();
+});
+$('tempo').oninput = e => { S.tempo = +e.target.value; $('tempoOut').textContent = S.tempo + ' BPM'; };
+$('tempo').onchange = () => { if (S.playing) play(); };
+$('loop').onchange = e => S.loop = e.target.checked;
+$('ladder').onchange = e => { S.ladder = e.target.checked; renderStatic(); if (S.playing) play(); };
+
+/* ---------- pitch detection ---------- */
+const mic = { on:false, an:null, buf:null, stream:null, midi:null, trace:[] };
+async function toggleMic() {
+  if (mic.on) {
+    mic.on = false; mic.stream && mic.stream.getTracks().forEach(t => t.stop());
+    $('micBtn').setAttribute('aria-pressed', false); $('micBtn').textContent = '\u{1F3A4} Turn on mic'; $('pInfo').textContent = 'Mic off'; $('pNote').textContent = '\u{2013}';
+    return;
+  }
+  ensureAudio();
+  try {
+    mic.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:false, autoGainControl:false}});
+  } catch (err) {
+    $('micNote').innerHTML = '<b>The mic isn\u{2019}t available here.</b> Allow the microphone when asked. On iPad: Settings, then Safari, then Microphone.';
+    return;
+  }
+  const src = ac.createMediaStreamSource(mic.stream);
+  mic.an = ac.createAnalyser(); mic.an.fftSize = 2048; src.connect(mic.an);
+  mic.buf = new Float32Array(mic.an.fftSize);
+  mic.on = true; $('micBtn').setAttribute('aria-pressed', true); $('micBtn').textContent = '\u{1F3A4} Mic on';
+  $('micNote').textContent = 'Tip: headphones stop the piano from confusing the mic. Nothing is recorded or saved.';
+}
+$('micBtn').onclick = toggleMic;
+function detect() {
+  mic.an.getFloatTimeDomainData(mic.buf);
+  const b = mic.buf, n = b.length; let rms = 0;
+  for (let i = 0; i < n; i++) rms += b[i] * b[i];
+  rms = Math.sqrt(rms / n); if (rms < .012) return null;
+  const sr = ac.sampleRate, minL = Math.floor(sr / 1100), maxL = Math.floor(sr / 75);
+  let best = -1, bestL = -1; const c = new Float32Array(maxL + 2);
+  for (let L = minL; L <= maxL + 1; L++) { let s = 0; for (let i = 0; i < n - L; i++) s += b[i] * b[i + L]; c[L] = s; }
+  for (let L = minL + 1; L <= maxL; L++) if (c[L] > c[L - 1] && c[L] >= c[L + 1] && c[L] > best) { best = c[L]; bestL = L; }
+  if (bestL < 0) return null;
+  let e0 = 0; for (let i = 0; i < n; i++) e0 += b[i] * b[i];
+  if (best / e0 < .45) return null;
+  const a = c[bestL - 1], m = c[bestL], z = c[bestL + 1], p = .5 * (a - z) / (a - 2 * m + z || 1);
+  const f = sr / (bestL + p);
+  return 69 + 12 * Math.log2(f / 440);
+}
+
+/* ---------- trace ---------- */
+const cv = $('trace'), cx = cv.getContext('2d');
+function drawTrace(target) {
+  const W = cv.width, H = cv.height, css = getComputedStyle(document.documentElement);
+  cx.clearRect(0, 0, W, H);
+  const notes = currentNotes(), lo = Math.min(...notes) - 3, hi = Math.max(...notes) + 3;
+  const y = m => H - (m - lo) / (hi - lo) * H;
+  cx.font = '20px DM Mono, monospace'; cx.fillStyle = css.getPropertyValue('--muted');
+  let lastLabY = -99;
+  [...new Set(notes)].sort((a, b) => b - a).forEach(m => {
+    cx.globalAlpha = m === target ? .9 : .28;
+    cx.fillStyle = m === target ? getComputedStyle($('main')).getPropertyValue('--c').trim() || '#6d4cff' : css.getPropertyValue('--muted');
+    if (cx.fillStyle.startsWith('var')) cx.fillStyle = '#6d4cff';
+    cx.fillRect(0, y(m) - 3, W, 6); cx.globalAlpha = .8; if (y(m) - lastLabY >= 22 || m === target) { cx.fillText(nn(m), 6, y(m) - 7); lastLabY = y(m); }
+  });
+  cx.globalAlpha = 1;
+  cx.strokeStyle = css.getPropertyValue('--ink'); cx.lineWidth = 4; cx.beginPath();
+  let pen = false;
+  mic.trace.forEach((p, i) => {
+    const x = W - (mic.trace.length - i) * 3;
+    if (p == null || p < lo - 2 || p > hi + 2) { pen = false; return; }
+    if (!pen) { cx.moveTo(x, y(p)); pen = true; } else cx.lineTo(x, y(p));
+  });
+  cx.stroke();
+}
+
+/* ---------- loop ---------- */
+function frame() {
+  let target = null;
+  if (S.playing && ac) {
+    const now = ac.currentTime - S.t0;
+    if (now > S.total) finishRun();
+    else {
+      let idx = -1;
+      for (let i = 0; i < S.events.length; i++) { const x = S.events[i]; if (now >= x.t && now < x.t + Math.max(x.d, .01)) { if (['play','ghost','follow'].includes(x.kind)) idx = i; } }
+      const cur = idx >= 0 ? S.events[idx] : null;
+      const lastBefore = S.events.filter(x => x.t <= now);
+      const lastEv = lastBefore[lastBefore.length - 1];
+      if (lastEv && lastEv.root != null && lastEv.root !== S.curRoot) { S.curRoot = lastEv.root; renderStatic(); }
+      if (idx !== S.lastIdx) {
+        S.lastIdx = idx;
+        Object.values(keyEl).forEach(k => k.classList.remove('now', 'ghost'));
+        document.querySelectorAll('#strip .chip').forEach((c, i) => { c.classList.toggle('now', cur && i === cur.i); c.classList.toggle('done', cur && i < cur.i); });
+        if (cur && keyEl[cur.m]) keyEl[cur.m].classList.add(cur.kind === 'ghost' ? 'ghost' : 'now');
+      }
+      if (cur) target = cur.m;
+      if (S.ex.jam) {
+        let ch = null; for (const x of S.events) if (x.kind === 'chord' && now >= x.t && now < x.t + x.d) ch = x;
+        const key = ch ? ch.t : -1;
+        if (key !== S.jamKey) {
+          S.jamKey = key;
+          Object.entries(keyEl).forEach(([m, k]) => { m = +m; k.classList.toggle('ghost', !!ch && m >= 60 && m < 72 && JAM_CHORDS[ch.ci].pcs.includes(m % 12)); });
+          document.querySelectorAll('#strip .chip').forEach((c, i) => c.classList.toggle('now', !!ch && i === ch.ci));
+          if (cur && keyEl[cur.m]) keyEl[cur.m].classList.add('now');
+        }
+      }
+      const st = $('status');
+      const label = lastEv ? lastEv.kind : 'count';
+      const msg = label === 'count' ? `Get ready\u{2026} ${4 - (lastEv ? lastEv.i : 0)}` :
+        label === 'cue' ? `Key of ${nn(lastEv.root).replace(/\d/, '')}: listen` :
+        S.ex.jam ? (S.events.some(x => x.kind === 'free' && now >= x.t && now < x.t + x.d) ? '<span class="turn">Your turn: make up an ad-lib</span>' : (S.mode === 'follow' ? '<span class="turn">Sing or play your own ideas over the chords</span>' : 'Listen to the idea')) :
+        label === 'chord' ? 'Chord first: listen' :
+        (cur && cur.kind === 'ghost') || label === 'yourturn' ? '<span class="turn">Your turn: sing it back</span>' :
+        S.mode === 'follow' ? '<span class="turn">Play it on your piano</span>' : 'Sing along';
+      if (st.dataset.msg !== msg) { st.innerHTML = msg; st.dataset.msg = msg; }
+    }
+  }
+  if (mic.on) {
+    const p = detect(); mic.trace.push(p); if (mic.trace.length > 200) mic.trace.shift();
+    if (p != null) {
+      const near = Math.round(p), cents = Math.round((p - near) * 100);
+      $('pNote').textContent = nn(near);
+      $('pNeedle').style.left = (50 + clamp(cents, -50, 50)) + '%';
+      let msg = `${Math.round(hz(p))} Hz \u{B7} ${cents >= 0 ? '+' : ''}${cents} cents`;
+      if (S.ex.jam && S.playing) {
+        const pc = ((p % 12) + 12) % 12, ok = PENTA.some(q => Math.abs(((pc - q + 18) % 12) - 6) < .4);
+        S.voiced++; if (ok) S.hits++;
+        msg = ok ? '\u{2713} In the key: sounds good here' : 'Outside the safe notes: try C, D, E, G or A';
+      } else if (target != null) {
+        let diff = (p - target) * 100; diff = ((diff % 1200) + 1800) % 1200 - 600;
+        const ok = Math.abs(diff) < 50; S.voiced++; if (ok) S.hits++;
+        msg = (ok ? '\u{2713} On ' : (diff > 0 ? '\u{2193} A bit high for ' : '\u{2191} A bit low for ')) + nn(target);
+      }
+      $('pInfo').textContent = msg;
+    } else $('pInfo').textContent = 'Listening\u{2026}';
+  }
+  drawTrace(target);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- week ---------- */
+function buildWeek() {
+  const w = $('week'); w.innerHTML = '';
+  const start = new Date(today); start.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const n = Object.keys((LOG[dkey(d)] || {done:{}}).done).length;
+    const el = document.createElement('div'); el.className = 'day' + (dkey(d) === dkey(today) ? ' today' : '') + (n >= 10 ? ' full' : '');
+    el.innerHTML = `${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}<b>${n}</b>done`;
+    w.appendChild(el);
+  }
+}
+
+buildList(); selectEx(EX[0]); buildWeek(); requestAnimationFrame(frame);
+})();
+</script>
+
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+</body>
+</html>
