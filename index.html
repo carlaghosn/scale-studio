@@ -131,6 +131,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
 .day.today{box-shadow:inset 0 0 0 2px var(--scales)}
 .day.full b{color:var(--ok)}
 .side-r{display:grid;gap:16px}
+.testbtn{font:800 15px var(--body);background:var(--surface-2);color:var(--ink);border:2px solid var(--c);border-radius:999px;padding:9px 16px;cursor:pointer}
+.testbtn.on{background:#d32f2f;border-color:#d32f2f;color:#fff}
+.tres{margin-top:14px;padding:14px;border-radius:12px;border:2px solid var(--c)}
+.tres .top{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.tres .grade{font:800 46px/1 var(--display)}
+.tres .sub{font-size:13.5px;color:var(--muted)}
+.tchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tchip{border-radius:9px;padding:4px 7px;min-width:48px;text-align:center;font-size:13px;border:1px solid var(--line)}
+.tchip b{display:block}
+.tchip span{font:500 10.5px var(--mono)}
+.tchip.ok{background:#e3f6ea;border-color:#8fd3a8;color:#0c5a31}
+.tchip.close{background:#fff4d6;border-color:#f0cf73;color:#6b4d00}
+.tchip.off{background:#fde4e4;border-color:#f1a3a3;color:#8a1c1c}
+.tchip.miss{background:var(--surface-2);color:var(--muted)}
 .rep{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 10px}
 .rep div{background:var(--surface-2);border-radius:10px;padding:8px 10px}
 .rep b{display:block;font:800 22px var(--display)}
@@ -181,6 +195,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
       <p class="why" id="exWhy"></p>
       <div class="controls">
         <button class="play" id="playBtn">&#x25B6; Play</button>
+        <button class="testbtn" id="testBtn">&#x1F3AF; Test me</button>
         <div class="seg" role="group" aria-label="How to practice">
           <button id="m-listen" aria-pressed="true">Sing along</button>
           <button id="m-echo" aria-pressed="false">Echo: I sing back</button>
@@ -198,6 +213,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,.ex:focus-visible{
       <div class="kbwrap"><div class="kb" id="kb"></div></div>
       <div class="rootline" id="rootline" hidden></div>
       <div class="strip" id="strip"></div>
+      <div class="tres" id="tres" hidden>
+        <div class="top"><div class="grade" id="tGrade">&#x2013;</div><div><b id="tScore"></b><div class="sub" id="tSub"></div></div></div>
+        <div class="tchips" id="tChips"></div>
+        <p class="sub" style="margin:8px 0 0">Green = in tune (within 30 cents). Yellow = close (sharp + or flat &#x2212;, in cents; 100 cents = a half step). Red = a different note. Gray = not heard.</p>
+      </div>
       <p class="tip" id="exTip"></p>
     </main>
 
@@ -546,7 +566,7 @@ function selectEx(e) {
   $('exPill').textContent = GROUPS.find(g => g[0] === e.g)[1]; $('exPill').style.setProperty('--c', e.c);
   $('exWhy').innerHTML = `${e.why} <span class="song">In the song: ${e.song}.</span>`;
   $('exTip').innerHTML = `<b>Tip:</b> ${e.tip}`;
-  $('ladderWrap').hidden = !e.pattern;
+  $('ladderWrap').hidden = !e.pattern; $('tres').hidden = true; $('testBtn').disabled = !!e.jam;
   $('cmpWrap').hidden = !(e.groove && e.feel !== 'pop');
   $('rulerWrap').hidden = !e.groove; $('dyn').hidden = !e.swell;
   $('keySel').disabled = !trOK(e); $('keySel').title = trOK(e) ? '' : 'This warm-up moves through keys by itself';
@@ -695,12 +715,12 @@ function buildEvents() {
     for (let k = 0; k < cycles; k++) {
       const styled = e.feel === 'pop' || !S.compare || k % 2 === 1;
       ev.push({t, d:2 * bar, kind:'drums', feel:e.feel, bars:2});
-      ev.push({t, d:bar * .95, kind:'chord', notes:[48, 52, 55, 60].map(m => m + o), jam:true});
-      ev.push({t:t + bar, d:bar * .95, kind:'chord', notes:[53, 57, 60, 65].map(m => m + o), jam:true});
+      if (!S.testing) { ev.push({t, d:bar * .95, kind:'chord', notes:[48, 52, 55, 60].map(m => m + o), jam:true}); ev.push({t:t + bar, d:bar * .95, kind:'chord', notes:[53, 57, 60, 65].map(m => m + o), jam:true}); }
+      else if (k === 0) ev.push({t:t - beat * 2, d:beat * 1.5, kind:'ref', m:GPHRASE[0][1] + o});
       ev.push({t, d:2 * bar, kind:'glabel', text:styled ? f.desc : 'Exactly on the beat (for comparison)'});
-      GPHRASE.forEach(([q, m, l], i) => ev.push({t:t + gOnset(q, beat, f, styled), d:l * beat / 2 * .9, m:m + o, kind:S.mode === 'follow' ? 'ghost' : 'play', i}));
+      GPHRASE.forEach(([q, m, l], i) => ev.push({t:t + gOnset(q, beat, f, styled), d:l * beat / 2 * .9, m:m + o, kind:S.testing ? 'test' : S.mode === 'follow' ? 'ghost' : 'play', i}));
       t += 2 * bar;
-      if (S.mode === 'echo') {
+      if (S.mode === 'echo' && !S.testing) {
         ev.push({t, d:2 * bar, kind:'drums', feel:e.feel, bars:2});
         ev.push({t, d:bar * .95, kind:'chord', notes:[48, 52, 55, 60].map(m => m + o), jam:true});
         ev.push({t:t + bar, d:bar * .95, kind:'chord', notes:[53, 57, 60, 65].map(m => m + o), jam:true});
@@ -722,17 +742,19 @@ function buildEvents() {
     }
     return {ev, total:t + beat};
   }
-  const blocks = e.pattern ? (S.ladder ? e.roots : [e.roots[0]]).map(r => ({root:r, notes:e.pattern.map(i => r + i)})) : [{root:null, notes:e.notes.map(m => m + off())}];
+  const roots = e.pattern ? (S.testing ? e.roots.slice(0, 3) : (S.ladder ? e.roots : [e.roots[0]])) : null;
+  const blocks = e.pattern ? roots.map(r => ({root:r, notes:e.pattern.map(i => r + i)})) : [{root:null, notes:e.notes.map(m => m + off())}];
   blocks.forEach(b => {
     if (e.cue && b.root != null) { ev.push({t, d:beat * 1.5, kind:'cue', root:b.root}); t += beat * 2; }
     const start = t;
+    if (S.testing) { ev.push({t, d:beat * 1.5, kind:'ref', m:b.notes[0]}); t += beat * 2; }
     b.notes.forEach((m, i) => {
-      if (e.chords && i % 4 === 0) { ev.push({t, d:beat * 1.8, kind:'chord', notes:e.groups[i / 4].map(m => m + off())}); t += beat * 2; }
+      if (e.chords && i % 4 === 0 && !S.testing) { ev.push({t, d:beat * 1.8, kind:'chord', notes:e.groups[i / 4].map(m => m + off())}); t += beat * 2; }
       const last = i === b.notes.length - 1;
-      ev.push({t, d:last ? Math.max(L, beat) * 1.6 : L, m, kind:S.mode === 'follow' ? 'follow' : 'play', root:b.root, i});
+      ev.push({t, d:last ? Math.max(L, beat) * 1.6 : L, m, kind:S.testing ? 'test' : S.mode === 'follow' ? 'follow' : 'play', root:b.root, i});
       t += last ? Math.max(L, beat) * 1.6 : L;
     });
-    if (S.mode === 'echo') {
+    if (S.mode === 'echo' && !S.testing) {
       t += beat * .5;
       ev.push({t, d:0, kind:'yourturn', root:b.root});
       const dur = t - start;
@@ -756,6 +778,8 @@ async function play() {
     else if (x.kind === 'play') piano(x.m, t, x.d * (S.ex.stac ? .28 : .92), .55, runGain);
     else if (x.kind === 'drums') drums(t, x.feel, x.bars, 60 / S.tempo, runGain);
     else if (x.kind === 'follow') click(t, x.i === 0, runGain);
+    else if (x.kind === 'ref') piano(x.m, t, x.d, .5, runGain);
+    else if (x.kind === 'test' && !S.ex.groove) click(t, false, runGain);
     else if (x.kind === 'cue') [0, 4, 7].forEach(i => piano(x.root + i - 12 >= 48 ? x.root + i - 12 : x.root + i, t, x.d, .28, runGain));
     else if (x.kind === 'chord') x.notes.forEach(m => piano(x.jam ? m : m - 12, t, x.d * (x.jam ? .95 : 1), x.jam ? (S.ex.groove ? .14 : .2) : .26, runGain));
   });
@@ -764,10 +788,40 @@ async function play() {
 function stop(silent) {
   if (runGain && ac) { const g = runGain; g.gain.setTargetAtTime(0, ac.currentTime, .02); setTimeout(() => g.disconnect(), 300); runGain = null; }
   const was = S.playing; S.playing = false; S.curRoot = null;
+  if (!silent && S.testing) { S.testing = false; $('testBtn').textContent = '\u{1F3AF} Test me'; $('testBtn').classList.remove('on'); }
   $('playBtn').textContent = '\u{25B6} Play';
   if (!silent) { renderStatic(); if (was) $('status').textContent = 'Stopped.'; }
 }
+function gradeTest() {
+  const notes = S.events.map((x, i) => [x, i]).filter(([x]) => x.kind === 'test');
+  let ok = 0, sumAbs = 0, nAbs = 0; const chips = [];
+  notes.forEach(([x, i]) => {
+    const fr = (S.tFrames[i] || []).slice().sort((a, b) => a - b);
+    if (fr.length < 3) { chips.push(`<div class="tchip miss"><b>${nn(x.m)}</b><span>not heard</span></div>`); return; }
+    const med = fr[Math.floor(fr.length / 2)];
+    let c = (med - x.m) * 100; c = ((c % 1200) + 1800) % 1200 - 600;   // forgive singing an octave away
+    const a = Math.abs(c);
+    const cls = a <= 30 ? 'ok' : a <= 60 ? 'close' : 'off';
+    if (a <= 30) ok++; else if (a <= 60) ok += .5;
+    if (a <= 60) { sumAbs += a; nAbs++; }
+    chips.push(`<div class="tchip ${cls}"><b>${nn(x.m)}</b><span>${cls === 'off' ? 'wrong note' : (c >= 0 ? '+' : '\u{2212}') + Math.round(a) + '\u{A2}'}</span></div>`);
+  });
+  const total = notes.length || 1, score = Math.round(ok / total * 100);
+  const heard = notes.filter(([, i]) => (S.tFrames[i] || []).length >= 3).length;
+  const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'Try again';
+  $('tres').hidden = false;
+  $('tGrade').textContent = heard ? grade : '\u{2013}';
+  $('tScore').textContent = heard ? `${score}/100 \u{B7} ${Math.round(ok)} of ${notes.length} notes in tune` : 'Nothing was heard';
+  $('tSub').textContent = heard ? (nAbs ? `Average distance from the note: ${Math.round(sumAbs / nAbs)} cents` : '') + (heard < notes.length ? ` \u{B7} ${notes.length - heard} notes not heard` : '') : 'Turn up your voice, move closer to the iPad, and use headphones if the piano is loud.';
+  $('tChips').innerHTML = chips.join('');
+  if (heard) { const d = todayLog(); d.test = d.test || {}; d.test[S.ex.id] = Math.max(d.test[S.ex.id] || 0, score); d.done[S.ex.id] = true; saveLog(); buildList(); buildWeek(); }
+  return grade;
+}
 function finishRun() {
+  if (S.testing) {
+    S.playing = false; S.testing = false; $('playBtn').textContent = '\u{25B6} Play'; $('testBtn').textContent = '\u{1F3AF} Test me'; $('testBtn').classList.remove('on');
+    const g = gradeTest(); $('status').textContent = 'Test finished: ' + g; S.curRoot = null; renderStatic(); return;
+  }
   S.playing = false; $('playBtn').textContent = '\u{25B6} Play';
   const d = todayLog();
   const real = (performance.now() - S.wallStart) / 1000 >= S.total * .8;
@@ -783,6 +837,14 @@ function finishRun() {
   if (S.loop) setTimeout(() => { if (!S.playing) play(); }, 700);
 }
 $('playBtn').onclick = () => S.playing ? stop() : play();
+$('testBtn').onclick = async () => {
+  if (S.testing) { S.testing = false; stop(); $('testBtn').textContent = '\u{1F3AF} Test me'; $('testBtn').classList.remove('on'); return; }
+  if (S.ex.jam) { $('status').textContent = 'The Ad-lib lab is free improvising, so there\u{2019}s nothing to grade. Pick another exercise.'; return; }
+  if (!mic.on) { await toggleMic(); if (!mic.on) { $('status').textContent = 'The test needs the microphone. Allow it and try again.'; return; } }
+  S.testing = true; S.tFrames = {}; $('tres').hidden = true;
+  $('testBtn').textContent = '\u{25A0} Stop test'; $('testBtn').classList.add('on');
+  play();
+};
 ['listen','echo','follow'].forEach(m => $('m-' + m).onclick = () => {
   S.mode = m; ['listen','echo','follow'].forEach(k => $('m-' + k).setAttribute('aria-pressed', k === m));
   if (S.playing) play(); else renderStatic();
@@ -869,8 +931,9 @@ function frame() {
     if (now > S.total) finishRun();
     else {
       let idx = -1;
-      for (let i = 0; i < S.events.length; i++) { const x = S.events[i]; if (now >= x.t && now < x.t + Math.max(x.d, .01)) { if (['play','ghost','follow'].includes(x.kind)) idx = i; } }
+      for (let i = 0; i < S.events.length; i++) { const x = S.events[i]; if (now >= x.t && now < x.t + Math.max(x.d, .01)) { if (['play','ghost','follow','test'].includes(x.kind)) idx = i; } }
       const cur = idx >= 0 ? S.events[idx] : null;
+      S.curEv = cur; S.curU = cur ? (now - cur.t) / Math.max(cur.d, .01) : 0; S.curIdx = idx;
       const lastBefore = S.events.filter(x => x.t <= now);
       const lastEv = lastBefore[lastBefore.length - 1];
       if (lastEv && lastEv.root != null && lastEv.root !== S.curRoot) { S.curRoot = lastEv.root; renderStatic(); }
@@ -900,6 +963,7 @@ function frame() {
         S.ex.groove ? (S.events.some(x => x.kind === 'free' && now >= x.t && now < x.t + x.d) ? '<span class="turn">Your turn: sing it back with the same feel</span>' : ((S.events.filter(x => x.kind === 'glabel' && x.t <= now).pop() || {text:'Listen'}).text)) :
         S.ex.jam ? (S.events.some(x => x.kind === 'free' && now >= x.t && now < x.t + x.d) ? '<span class="turn">Your turn: make up an ad-lib</span>' : (S.mode === 'follow' ? '<span class="turn">Sing or play your own ideas over the chords</span>' : 'Listen to the idea')) :
         label === 'chord' ? 'Chord first: listen' :
+        S.testing ? (label === 'ref' ? 'Starting note: listen' : '<span class="turn">Test: sing each note as it lights up</span>') :
         (cur && cur.kind === 'ghost') || label === 'yourturn' ? '<span class="turn">Your turn: sing it back</span>' :
         S.mode === 'follow' ? '<span class="turn">Play it on your piano</span>' : 'Sing along';
       if (st.dataset.msg !== msg) { st.innerHTML = msg; st.dataset.msg = msg; }
@@ -907,6 +971,7 @@ function frame() {
   }
   if (mic.on) {
     const p = detect(); mic.trace.push(p); if (mic.trace.length > 200) mic.trace.shift();
+    if (S.testing && S.playing && p != null && S.curEv && S.curEv.kind === 'test' && S.curU > .2 && S.curU < .9) (S.tFrames[S.curIdx] = S.tFrames[S.curIdx] || []).push(p);
     if (p != null) {
       const near = Math.round(p), cents = Math.round((p - near) * 100);
       $('pNote').textContent = nn(near);
@@ -933,22 +998,27 @@ function buildReport() {
   const keys = []; const d = new Date(); for (let i = 0; i < 30; i++) { keys.push(dkey(d)); d.setDate(d.getDate() - 1); }
   const active = k => LOG[k] && Object.keys(LOG[k].done || {}).length;
   const d7 = keys.slice(0, 7).filter(active).length, d30 = keys.filter(active).length;
-  const ever = new Set(), best = {};
-  Object.values(LOG).forEach(o => { Object.keys(o.done || {}).forEach(id => ever.add(id)); Object.entries(o.best || {}).forEach(([id, v]) => best[id] = Math.max(best[id] || 0, v)); });
+  const ever = new Set(), best = {}, tbest = {}; let tN = 0;
+  Object.values(LOG).forEach(o => { Object.keys(o.done || {}).forEach(id => ever.add(id)); Object.entries(o.best || {}).forEach(([id, v]) => best[id] = Math.max(best[id] || 0, v)); Object.entries(o.test || {}).forEach(([id, v]) => { tbest[id] = Math.max(tbest[id] || 0, v); tN++; }); });
+  const tv = Object.values(tbest), tavg = tv.length ? Math.round(tv.reduce((a, b) => a + b, 0) / tv.length) : null;
+  const L = x => x >= 90 ? 'A' : x >= 80 ? 'B' : x >= 70 ? 'C' : x >= 60 ? 'D' : 'F';
   const scores = Object.values(best), avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
-  let h = `<div class="rep"><div><b>${d7}/7</b><span>days this week</span></div><div><b>${d30}</b><span>days in the last 30</span></div><div><b>${ever.size}/${EX.length}</b><span>exercises practiced</span></div><div><b>${avg == null ? '\u{2013}' : avg + '%'}</b><span>average pitch score</span></div></div>`;
+  let h = `<div class="rep"><div><b>${d7}/7</b><span>days this week</span></div><div><b>${d30}</b><span>days in the last 30</span></div><div><b>${ever.size}/${EX.length}</b><span>exercises practiced</span></div><div><b>${avg == null ? '\u{2013}' : avg + '%'}</b><span>average pitch score</span></div><div><b>${tN}</b><span>tests taken</span></div><div><b>${tavg == null ? '\u{2013}' : tavg + ' (' + L(tavg) + ')'}</b><span>average test score</span></div></div>`;
   const lines = [];
   GROUPS.forEach(([g, label]) => {
     const items = EX.filter(e => e.g === g), n = items.filter(e => ever.has(e.id)).length;
-    const bs = items.map(e => best[e.id]).filter(v => v != null), gb = bs.length ? Math.round(bs.reduce((a, b) => a + b, 0) / bs.length) + '% in tune' : '';
+    const bs = items.map(e => best[e.id]).filter(v => v != null), gb0 = bs.length ? Math.round(bs.reduce((a, b) => a + b, 0) / bs.length) + '% in tune' : '';
+    const ts = items.map(e => tbest[e.id]).filter(v => v != null), gt = ts.length ? Math.round(ts.reduce((a, b) => a + b, 0) / ts.length) : null;
+    const gb = [gb0, gt == null ? '' : 'test ' + gt + ' (' + L(gt) + ')'].filter(Boolean).join(', ');
     h += `<div class="rrow"><span>${label}</span><span>${n}/${items.length}${gb ? ' \u{B7} ' + gb : ''}</span><div class="bar"><b style="width:${Math.round(n / items.length * 100)}%"></b></div></div>`;
     lines.push(`${label}: ${n}/${items.length} practiced${gb ? ', ' + gb : ''}`);
   });
-  const weak = Object.entries(best).filter(([, v]) => v < 70).map(([id, v]) => { const e = EX.find(x => x.id === id); return e ? `${e.t} (${v}%)` : null; }).filter(Boolean).slice(0, 6);
+  const weakSrc = Object.assign({}, best, tbest);
+  const weak = Object.entries(weakSrc).filter(([, v]) => v < 70).map(([id, v]) => { const e = EX.find(x => x.id === id); return e ? `${e.t} (${v}%)` : null; }).filter(Boolean).slice(0, 6);
   if (weak.length) h += `<p class="note"><b>Needs work (under 70% in tune):</b> ${weak.join(' \u{B7} ')}</p>`;
   if (!scores.length) h += '<p class="note">Pitch scores appear when the mic is on during an exercise.</p>';
   $('repBody').innerHTML = h;
-  S.reportText = [`Scale Studio progress (${new Date().toLocaleDateString()})`, `This week: ${d7}/7 days \u{B7} Last 30 days: ${d30} days \u{B7} Exercises practiced: ${ever.size}/${EX.length}` + (avg == null ? '' : ` \u{B7} Average pitch score: ${avg}%`), '', ...lines, ...(weak.length ? ['', 'Needs work: ' + weak.join('; ')] : [])].join('\n');
+  S.reportText = [`Scale Studio progress (${new Date().toLocaleDateString()})`, `This week: ${d7}/7 days \u{B7} Last 30 days: ${d30} days \u{B7} Exercises practiced: ${ever.size}/${EX.length}` + (avg == null ? '' : ` \u{B7} Average pitch score: ${avg}%`) + (tavg == null ? '' : ` \u{B7} Tests: ${tN}, average ${tavg} (${L(tavg)})`), '', ...lines, ...(weak.length ? ['', 'Needs work: ' + weak.join('; ')] : [])].join('\n');
 }
 $('repBtn').onclick = () => { const c = $('repCard'); c.hidden = !c.hidden; if (!c.hidden) { buildReport(); c.scrollIntoView({behavior:'smooth', block:'nearest'}); } };
 $('repCopy').onclick = async () => {
