@@ -19,7 +19,7 @@
 [hidden]{display:none!important}
 :root{
   --bg:#eef1f6; --surface:#ffffff; --surface-2:#f3f5f9; --ink:#15202c; --muted:#5d6878; --line:#d9dfe8;
-  --scales:#6d4cff; --voice:#ff4f6d; --licks:#e8930c; --riffs:#0e9f9a; --penta:#2f7de1; --modes:#c0479a; --chords:#1b8fb3; --groove:#2e9a3e; --warm:#c2410c; --ok:#159a5b; --warn:#c2410c;
+  --scales:#6d4cff; --voice:#ff4f6d; --licks:#e8930c; --riffs:#0e9f9a; --penta:#2f7de1; --modes:#c0479a; --chords:#1b8fb3; --groove:#2e9a3e; --warm:#c2410c; --lana:#8a5a44; --ok:#159a5b; --warn:#c2410c;
   --key-w:#fbfaf7; --key-b:#1c2230; --key-line:#c5ccd8;
   --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
   --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -28,11 +28,11 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){color-scheme:dark;
     --bg:#0e131a; --surface:#161d27; --surface-2:#1d2531; --ink:#e9eef5; --muted:#9aa7b8; --line:#29323f;
-    --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --modes:#e27cc0; --chords:#4cc3e6; --groove:#5fd36b; --warm:#ff8a5c; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
+    --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --modes:#e27cc0; --chords:#4cc3e6; --groove:#5fd36b; --warm:#ff8a5c; --lana:#d9a38a; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
 }
 :root[data-theme="dark"]{color-scheme:dark;
   --bg:#0e131a; --surface:#161d27; --surface-2:#1d2531; --ink:#e9eef5; --muted:#9aa7b8; --line:#29323f;
-  --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --modes:#e27cc0; --chords:#4cc3e6; --groove:#5fd36b; --warm:#ff8a5c; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
+  --scales:#9b86ff; --voice:#ff7088; --licks:#f5ab3a; --riffs:#2cc7c0; --penta:#5aa2ff; --modes:#e27cc0; --chords:#4cc3e6; --groove:#5fd36b; --warm:#ff8a5c; --lana:#d9a38a; --ok:#3fd18a; --warn:#ff8a5c; --key-line:#8f98a8;}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
 .wrap{max-width:1320px;margin:0 auto;padding-inline:clamp(16px,3vw,28px);padding-block:20px 44px}
@@ -265,8 +265,8 @@ const nn = m => (sharpKey() ? SHARPS : flatKey() ? FLATS : NAMES)[((m % 12) + 12
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 const SOLF = ['do','di','re','me','mi','fa','fi','sol','le','la','te','ti'];
 const solf = (m, tonic) => SOLF[((m - tonic) % 12 + 12) % 12];
-const COLORS = { scales:'var(--scales)', voice:'var(--voice)', licks:'var(--licks)', riffs:'var(--riffs)', penta:'var(--penta)', modes:'var(--modes)', chords:'var(--chords)', groove:'var(--groove)', warm:'var(--warm)' };
-const GROUPS = [['scales','Scales & ear'], ['penta','The pentatonic family'], ['modes','Minor scales & modes'], ['chords','Jazz & gospel chords'], ['groove','Groove & timing'], ['licks','We Belong Together licks'], ['riffs','R&B riffs, runs & ad-libs'], ['warm','Classic warm-ups'], ['voice','Voice builders']];
+const COLORS = { scales:'var(--scales)', voice:'var(--voice)', licks:'var(--licks)', riffs:'var(--riffs)', penta:'var(--penta)', modes:'var(--modes)', chords:'var(--chords)', groove:'var(--groove)', warm:'var(--warm)', lana:'var(--lana)' };
+const GROUPS = [['scales','Scales & ear'], ['penta','The pentatonic family'], ['modes','Minor scales & modes'], ['chords','Jazz & gospel chords'], ['groove','Groove & timing'], ['licks','We Belong Together licks'], ['riffs','R&B riffs, runs & ad-libs'], ['warm','Classic warm-ups'], ['voice','Voice builders'], ['lana','Lana Del Rey songs']];
 
 /* ---------- exercises ---------- */
 // notes: absolute MIDI (C4 = 60). pattern+roots: intervals repeated on each root (ladder).
@@ -482,7 +482,27 @@ const EX = [
   {id:'belt', g:'voice', t:'Belt-mix arpeggio 1-3-5-8-5-3-1', s:'on "nay" or "mum"', tempo:96, len:1, cue:true,
    pattern:[0,4,7,12,7,4,0], roots:[60,61,62,63,64,65,66,67,68,69],
    why:'Builds the bright belt-mix for the octave-up final chorus, topping out at A5.', song:'Final chorus 2:40 to 3:08',
-   tip:'Bright "nay", soft palate high, pocket open. Stop the ladder the moment it feels like shouting.'}
+   tip:'Bright "nay", soft palate high, pocket open. Stop the ladder the moment it feels like shouting.'},
+  {"id": "lana01", "g": "lana", "t": "Summertime Sadness: F minor", "s": "la ti do re mi fa sol la", "tempo": 72, "len": 1, "notes": [53, 55, 56, 58, 60, 61, 63, 65, 63, 61, 60, 58, 56, 55, 53], "tonic": 44, "why": "The scale Summertime Sadness is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 4 half steps lower).", "song": "Chord loop: A \u{2013} C#m \u{2013} B \u{2013} F#m (Lana's key) \u{B7} reel cut: pre-chorus into chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana02", "g": "lana", "t": "Young and Beautiful: E minor", "s": "la ti do re mi fa sol la", "tempo": 72, "len": 1, "notes": [64, 66, 67, 69, 71, 72, 74, 76, 74, 72, 71, 69, 67, 66, 64], "tonic": 55, "why": "The scale Young and Beautiful is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 5 half steps lower).", "song": "Chord loop: G \u{2013} A \u{2013} Bm \u{2013} D (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana03", "g": "lana", "t": "Say Yes to Heaven: G minor", "s": "la ti do re mi fa sol la", "tempo": 96, "len": 1, "notes": [55, 57, 58, 60, 62, 63, 65, 67, 65, 63, 62, 60, 58, 57, 55], "tonic": 46, "why": "The scale Say Yes to Heaven is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 1 half step lower).", "song": "Chord loop: Dmaj7 \u{2013} E6add11 \u{2013} F#m (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana04", "g": "lana", "t": "Video Games: A minor", "s": "la ti do re mi fa sol la", "tempo": 72, "len": 1, "notes": [57, 59, 60, 62, 64, 65, 67, 69, 67, 65, 64, 62, 60, 59, 57], "tonic": 48, "why": "The scale Video Games is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 3 half steps lower).", "song": "Chord loop: F#m \u{2013} A \u{2013} C#m \u{2013} D (Lana's key) \u{B7} reel cut: second half of verse 1 into chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana05", "g": "lana", "t": "Born to Die: G minor", "s": "la ti do re mi fa sol la", "tempo": 86, "len": 1, "notes": [55, 57, 58, 60, 62, 63, 65, 67, 65, 63, 62, 60, 58, 57, 55], "tonic": 46, "why": "The scale Born to Die is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 3 half steps lower).", "song": "Chord loop: C \u{2013} Em \u{2013} D (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana06", "g": "lana", "t": "Doin' Time: A dorian", "s": "re mi fa sol la ti do re", "tempo": 72, "len": 1, "notes": [57, 59, 60, 62, 64, 66, 67, 69, 67, 66, 64, 62, 60, 59, 57], "tonic": 55, "why": "The scale Doin' Time is built on, in dorian (re-based), moved to a key that suits your voice (Lana sings it 2 half steps lower).", "song": "Chord loop: Gm \u{2013} C7 (Lana's key) \u{B7} reel cut: chorus into the start of verse 2", "tip": "Minor with a brighter 6th: from re to re, all white-key syllables. That raised 6th (ti here) is what makes it cool instead of sad. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana07", "g": "lana", "t": "Brooklyn Baby: B\u{266D} mixolydian", "s": "sol la ti do re mi fa sol", "tempo": 96, "len": 1, "notes": [58, 60, 62, 63, 65, 67, 68, 70, 68, 67, 65, 63, 62, 60, 58], "tonic": 51, "why": "The scale Brooklyn Baby is built on, in mixolydian (sol-based), moved to a key that suits your voice (Lana sings it 2 half steps lower).", "song": "Chord loop: Ab \u{2013} Fm \u{2013} Db \u{2013} Gb (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Major with a lowered 7th: from sol to sol. That soft 7th (fa here) gives the laid-back, California-rock feel. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana08", "g": "lana", "t": "West Coast: A minor", "s": "la ti do re mi fa sol la", "tempo": 72, "len": 1, "notes": [57, 59, 60, 62, 64, 65, 67, 69, 67, 65, 64, 62, 60, 59, 57], "tonic": 48, "why": "The scale West Coast is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 3 half steps lower).", "song": "Chord loop: F#m \u{2013} E \u{2013} D (Lana's key) \u{B7} reel cut: verse 2 into the slowed-down chorus (the tempo drop)", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana09", "g": "lana", "t": "Cinnamon Girl: A minor", "s": "la ti do re mi fa sol la", "tempo": 72, "len": 1, "notes": [57, 59, 60, 62, 64, 65, 67, 69, 67, 65, 64, 62, 60, 59, 57], "tonic": 48, "why": "The scale Cinnamon Girl is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 3 half steps lower).", "song": "Chord loop: D \u{2013} F#m \u{2013} E \u{2013} Bm (Lana's key) \u{B7} reel cut: pre-chorus into chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana10", "g": "lana", "t": "Radio: G major", "s": "do re mi fa sol la ti do", "tempo": 75, "len": 1, "notes": [55, 57, 59, 60, 62, 64, 66, 67, 66, 64, 62, 60, 59, 57, 55], "tonic": 55, "why": "The scale Radio is built on, in major, moved to a key that suits your voice (Lana sings it 5 half steps lower).", "song": "Chord loop: G \u{2013} D \u{2013} A \u{2013} Em (Lana's key) \u{B7} reel cut: pre-chorus into chorus 1", "tip": "Plain major: do to do. Lana keeps it simple and lets the tone do the work. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana11", "g": "lana", "t": "Blue Jeans: F dorian", "s": "re mi fa sol la ti do re", "tempo": 72, "len": 1, "notes": [53, 55, 56, 58, 60, 62, 63, 65, 63, 62, 60, 58, 56, 55, 53], "tonic": 51, "why": "The scale Blue Jeans is built on, in dorian (re-based), in Lana's key.", "song": "Chord loop: Fm \u{2013} Eb \u{2013} Bb (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Minor with a brighter 6th: from re to re, all white-key syllables. That raised 6th (ti here) is what makes it cool instead of sad. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana12", "g": "lana", "t": "Ride: D\u{266D} major", "s": "do re mi fa sol la ti do", "tempo": 94, "len": 1, "notes": [61, 63, 65, 66, 68, 70, 72, 73, 72, 70, 68, 66, 65, 63, 61], "tonic": 61, "why": "The scale Ride is built on, in major, moved to a key that suits your voice (Lana sings it 1 half step lower).", "song": "Chord loop: F \u{2013} Am \u{2013} G \u{2013} Dm (Lana's key) \u{B7} reel cut: the final chorus (the big build)", "tip": "Plain major: do to do. Lana keeps it simple and lets the tone do the work. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana13", "g": "lana", "t": "National Anthem: E\u{266D} major", "s": "do re mi fa sol la ti do", "tempo": 85, "len": 1, "notes": [63, 65, 67, 68, 70, 72, 74, 75, 74, 72, 70, 68, 67, 65, 63], "tonic": 63, "why": "The scale National Anthem is built on, in major, in Lana's key.", "song": "Chord loop: Ab \u{2013} Cm \u{2013} Bb (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Plain major: do to do. Lana keeps it simple and lets the tone do the work. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana14", "g": "lana", "t": "A&W: B\u{266D} major", "s": "do re mi fa sol la ti do", "tempo": 78, "len": 1, "notes": [58, 60, 62, 63, 65, 67, 69, 70, 69, 67, 65, 63, 62, 60, 58], "tonic": 58, "why": "The scale A&W is built on, in major, in Lana's key.", "song": "Chord loop: Bb \u{2013} Ebm/Gb (Lana's key) \u{B7} reel cut: first half only: the acoustic opening section", "tip": "Plain major: do to do. Lana keeps it simple and lets the tone do the work. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana15", "g": "lana", "t": "Norman F. Rockwell: C# mixolydian", "s": "sol la ti do re mi fa sol", "tempo": 78, "len": 1, "notes": [61, 63, 65, 66, 68, 70, 71, 73, 71, 70, 68, 66, 65, 63, 61], "tonic": 54, "why": "The scale Norman F. Rockwell is built on, in mixolydian (sol-based), moved to a key that suits your voice (Lana sings it 1 half step lower).", "song": "Chord loop: C \u{2013} Bb \u{2013} Am (Lana's key) \u{B7} reel cut: verse 1 into chorus 1", "tip": "Major with a lowered 7th: from sol to sol. That soft 7th (fa here) gives the laid-back, California-rock feel. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana16", "g": "lana", "t": "Mariners Apartment Complex: G mixolydian", "s": "sol la ti do re mi fa sol", "tempo": 76, "len": 1, "notes": [55, 57, 59, 60, 62, 64, 65, 67, 65, 64, 62, 60, 59, 57, 55], "tonic": 48, "why": "The scale Mariners Apartment Complex is built on, in mixolydian (sol-based), moved to a key that suits your voice (Lana sings it 3 half steps lower).", "song": "Chord loop: E \u{2013} Bm \u{2013} A (Lana's key) \u{B7} reel cut: chorus 1 (the warm low register)", "tip": "Major with a lowered 7th: from sol to sol. That soft 7th (fa here) gives the laid-back, California-rock feel. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana17", "g": "lana", "t": "hope is a dangerous thing for a woman like me to have - but I have it: C major", "s": "do re mi fa sol la ti do", "tempo": 72, "len": 1, "notes": [60, 62, 64, 65, 67, 69, 71, 72, 71, 69, 67, 65, 64, 62, 60], "tonic": 60, "why": "The scale hope is a dangerous thing for a woman like me to have - but I have it is built on, in major, moved to a key that suits your voice (Lana sings it 5 half steps lower).", "song": "Chord loop: C \u{2013} D \u{2013} Em (Lana's key) \u{B7} reel cut: the opening verse (piano and voice)", "tip": "Plain major: do to do. Lana keeps it simple and lets the tone do the work. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana18", "g": "lana", "t": "Chemtrails Over the Country Club: G minor", "s": "la ti do re mi fa sol la", "tempo": 72, "len": 1, "notes": [55, 57, 58, 60, 62, 63, 65, 67, 65, 63, 62, 60, 58, 57, 55], "tonic": 46, "why": "The scale Chemtrails Over the Country Club is built on, in minor (la-based), moved to a key that suits your voice (Lana sings it 3 half steps lower).", "song": "Chord loop: C \u{2013} D \u{2013} Em (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana19", "g": "lana", "t": "Diet Mountain Dew: B\u{266D} minor", "s": "la ti do re mi fa sol la", "tempo": 88, "len": 1, "notes": [58, 60, 61, 63, 65, 66, 68, 70, 68, 66, 65, 63, 61, 60, 58], "tonic": 49, "why": "The scale Diet Mountain Dew is built on, in minor (la-based), in Lana's key.", "song": "Chord loop: Bbm \u{2013} Ab \u{2013} Gb (Lana's key) \u{B7} reel cut: pre-chorus into chorus 1", "tip": "Natural minor from la to la. Same notes as the relative major, but home is la, which gives the melancholy Lana color. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."},
+  {"id": "lana20", "g": "lana", "t": "Ultraviolence: E dorian", "s": "re mi fa sol la ti do re", "tempo": 72, "len": 1, "notes": [64, 66, 67, 69, 71, 73, 74, 76, 74, 73, 71, 69, 67, 66, 64], "tonic": 62, "why": "The scale Ultraviolence is built on, in dorian (re-based), moved to a key that suits your voice (Lana sings it 2 half steps lower).", "song": "Chord loop: F \u{2013} Am/C \u{2013} G \u{2013} Dm (Lana's key) \u{B7} reel cut: chorus 1", "tip": "Minor with a brighter 6th: from re to re, all white-key syllables. That raised 6th (ti here) is what makes it cool instead of sad. Then open Song warm-ups in the Solf\u{E8}ge Studio for the full routine."}
 ];
 EX.forEach(e => { e.c = COLORS[e.g]; });
 const TAGS = {cmaj:['all'], range:['song','pop','ballad'], cpent:['pop','rnb','gospel','rock','song'], apent:['pop','rnb','rock','song'], cblues:['rnb','gospel','jazz','rock','song'],
@@ -493,8 +513,8 @@ const TAGS = {cmaj:['all'], range:['song','pop','ballad'], cpent:['pop','rnb','g
   chrom:['all'], whole:['jazz'], dimsc:['jazz'], maj7:['jazz','rnb','ballad'], min7:['rnb','jazz','song'], dom7:['gospel','rock','jazz'], maj9:['jazz','gospel'], min9:['rnb','jazz'], iivi:['jazz','gospel'],
   g_pop:['pop','all'], g_rock:['rock'], g_rnb:['rnb','song'], g_jazz:['jazz'], g_ballad:['ballad','song'],
   five:['all'], nine:['all'], stacc:['all'], agil:['all'], messa:['all','ballad'], low:['all','song'], trill:['all','song'], octave:['all','song'], belt:['pop','rnb','rock','song']};
-EX.forEach(e => { e.tags = TAGS[e.id] || ['all']; });
-const FILTERS = [['any','All'], ['song','This song'], ['pop','Pop'], ['rnb','R&B'], ['ballad','Ballads'], ['gospel','Gospel'], ['jazz','Jazz'], ['rock','Rock']];
+EX.forEach(e => { e.tags = e.g === 'lana' ? ['lana', 'pop', 'ballad'] : TAGS[e.id] || ['all']; });
+const FILTERS = [['any','All'], ['song','This song'], ['pop','Pop'], ['rnb','R&B'], ['ballad','Ballads'], ['gospel','Gospel'], ['jazz','Jazz'], ['rock','Rock'], ['lana','Lana']];
 const KEYS = [['C',0],['D\u{266D}',1],['D',2],['E\u{266D}',3],['E',4],['F',5],['F\u{266F}',6],['G',-5],['A\u{266D}',-4],['A',-3],['B\u{266D}',-2],['B',-1]];
 const FEELS = {
   pop:{n:'Pop', off:0, swing:0, desc:'Pop feel: right on the beat'},
@@ -531,7 +551,7 @@ const S = { keyOff:0, filter:'any', compare:true, ex:EX[0], mode:'listen', tempo
 function buildList() {
   const box = $('exlist'); box.innerHTML = '';
   GROUPS.forEach(([g, label]) => {
-    const items = EX.filter(e => e.g === g && (S.filter === 'any' || e.tags.includes(S.filter) || e.tags.includes('all')));
+    const items = EX.filter(e => e.g === g && (S.filter === 'any' || (S.filter === 'lana' ? e.g === 'lana' : e.tags.includes(S.filter) || e.tags.includes('all'))));
     if (!items.length) return;
     const wrap = document.createElement('div'); wrap.className = 'group';
     wrap.innerHTML = `<p class="glabel" style="--c:${COLORS[g]}"><i></i>${label}</p>`;
@@ -559,7 +579,7 @@ function buildFilters() {
 }
 function selectEx(e) {
   stop();
-  S.ex = e; S.tempo = e.tempo; $('tempo').value = e.tempo; $('tempoOut').textContent = e.tempo + ' BPM';
+  S.ex = e; keyLabels(e); S.tempo = e.tempo; $('tempo').value = e.tempo; $('tempoOut').textContent = e.tempo + ' BPM';
   document.querySelectorAll('.ex').forEach(b => b.setAttribute('aria-pressed', b.querySelector('b').textContent === e.t));
   $('main').style.setProperty('--c', e.c);
   $('exTitle').textContent = e.t;
@@ -852,7 +872,15 @@ $('testBtn').onclick = async () => {
 $('tempo').oninput = e => { S.tempo = +e.target.value; $('tempoOut').textContent = S.tempo + ' BPM'; };
 $('tempo').onchange = () => { if (S.playing) play(); };
 $('loop').onchange = e => S.loop = e.target.checked;
-KEYS.forEach(([n, o]) => { const op = document.createElement('option'); op.value = o; op.textContent = n + (o === 0 ? ' (song key)' : ''); $('keySel').appendChild(op); });
+KEYS.forEach(([n, o]) => { const op = document.createElement('option'); op.value = o; op.textContent = n + (o === 0 ? ' (song key)' : ''); op.dataset.n = op.textContent; $('keySel').appendChild(op); });
+function keyLabels(e) {   // Lana scales: name each key from the song's own home note and mode
+  const NM = ['C','D\u{266D}','D','E\u{266D}','E','F','F\u{266F}','G','A\u{266D}','A','B\u{266D}','B'];
+  [...$('keySel').options].forEach(op => {
+    if (e.g !== 'lana') { op.textContent = op.dataset.n; return; }
+    const o = +op.value, mode = e.t.split(' ').pop();
+    op.textContent = NM[(((e.notes[0] + o) % 12) + 12) % 12] + ' ' + mode + (o === 0 ? ' (suggested for your voice)' : '');
+  });
+}
 $('keySel').onchange = e => { S.keyOff = +e.target.value; try { localStorage.setItem('scale-studio-key', S.keyOff); } catch (err) {} stop(true); renderStatic(); $('status').textContent = 'Press Play to hear it.'; };
 $('cmp').onchange = e => { S.compare = e.target.checked; if (S.playing) play(); };
 $('tempo').addEventListener('change', () => { if (S.ex.groove) renderRuler(); });
